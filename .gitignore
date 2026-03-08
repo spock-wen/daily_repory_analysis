@@ -1,4 +1,21 @@
 
+# 数据目录
+data/briefs/
+data/insights/
+data/archive/
+
+# 报告输出
+reports/
+
+# 配置文件
+config/config.json
+config/prompts.json
+
+# 环境变量（敏感）
+.env
+.env.local
+.env.*.local
+
 # AI 分析结果
 .processor_state.json
 .prompt_*.txt
@@ -12,18 +29,17 @@
 .api-queue/
 .api-results/
 
-
 # 临时文件
 *.tmp
 *.bak
+*.old
 
-# 环境配置（敏感）
-.env
-.env.local
-.env.*.local
+# 旧脚本（临时保留）
+.old_scripts/
 
-# 包含密钥的脚本（已改用环境变量，但为安全起见仍排除）
-scripts/generate-weekly-test.js
+# 依赖
+node_modules/
 
-# 临时脚本
-scripts/resend-notification.js
+# 测试
+coverage/
+.nyc_output/
