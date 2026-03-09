@@ -395,7 +395,7 @@ class MessageSender {
    * @returns {string} 报告 URL
    */
   buildReportUrl(type, identifier) {
-    const baseUrl = config.base_url || 'http://localhost:8080';
+    const baseUrl = config.report?.baseUrl || 'https://report.wenspock.site';
     const filename = this.getReportFilename(type, identifier);
     return `${baseUrl}/reports/${type}/${filename}`;
   }
