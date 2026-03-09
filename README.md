@@ -32,6 +32,8 @@
 - ✅ **统一主页**：一个页面管理所有报告
 - ✅ **模块化设计**：数据加载、AI 分析、HTML 生成、推送通知完全解耦
 - ✅ **统一 CLI**：简单的命令行接口
+- ✅ **灵活配置**：环境变量管理敏感信息，支持服务启用/禁用控制
+- ✅ **完善测试**：核心模块全覆盖的测试体系
 
 ## 目录结构
 
@@ -49,14 +51,12 @@
 │   ├── generate-weekly.js    # 生成周报
 │   ├── generate-monthly.js   # 生成月报
 │   ├── generate-all.js       # 生成所有报告
-│   ├── generate-index.js     # 生成首页
-│   ├── update-index.js       # 更新首页
-│   └── help.js               # 帮助文档
+│   └── generate-index.js     # 生成首页
 ├── tests/                    # 测试文件
 │   ├── loader/               # 数据加载测试
 │   ├── analyzer/             # AI 分析测试
 │   ├── generator/            # HTML 生成测试
-│   └── notifier/             # 通知发送测试
+│   └── utils/                # 工具函数测试
 ├── data/                     # 数据目录
 │   ├── briefs/               # 输入数据
 │   │   ├── daily/
@@ -64,8 +64,7 @@
 │   │   └── monthly/
 │   └── insights/             # AI 分析结果
 │       ├── daily/
-│       ├── weekly/
-│       └── monthly/
+│       └── weekly/
 ├── reports/                  # HTML 输出
 │   ├── daily/
 │   ├── weekly/
@@ -74,21 +73,18 @@
 ├── public/                   # 静态资源
 │   └── css/                  # 样式文件
 ├── config/                   # 配置文件
-│   ├── config.json           # 项目配置
+│   ├── config.json           # 项目配置（可安全提交）
 │   └── prompts.json          # AI 提示词
 ├── docs/                     # 文档
 │   ├── API.md                # API 文档
-│   └── DEPLOYMENT.md         # 部署指南
-└── todo/                     # 待办计划
+│   ├── GUIDE.md              # 部署与开发指南
+│   └── CONFIG.md             # 配置说明
+└── .env.example              # 环境变量示例
 ```
 
 ## 参考数据
 
-`archive/` 目录下保留了历史数据，用于新架构开发时的参考：
-
-- 每日推送数据
-- 历史报告样式参考
-- 数据结构示例
+`data/briefs/` 目录下保存了每日推送的数据，`data/insights/` 保存 AI 分析结果。
 
 ## 快速开始
 
@@ -102,8 +98,15 @@ npm install
 
 ```bash
 cp .env.example .env
-# 编辑 .env 文件，填入 LLM API 密钥等配置
+# 编辑 .env 文件，填入必要配置
 ```
+
+**必要配置项**：
+- `LLM_API_KEY` - LLM API 密钥（必需）
+- `FEISHU_*` - 飞书通知配置（可选）
+- `WELINK_*` - WeLink 通知配置（可选）
+
+> 📖 详细配置说明请参考 **[配置文档](docs/CONFIG.md)**
 
 ### 3. 生成报告
 
@@ -134,6 +137,8 @@ npm run generate:index
 - **[API 文档](docs/API.md)** - 详细的 API 使用说明
 - **[配置说明](docs/CONFIG.md)** - 环境变量和配置文件说明
 
+> 📖 **建议**：首次使用请先阅读 [配置文档](docs/CONFIG.md) 了解环境变量配置。
+
 ## 首页更新
 
 首页 (`reports/index.html`) 是报告系统的导航中心，支持多种更新方式：
@@ -161,15 +166,15 @@ npm run generate:index
 ```bash
 # 运行所有测试
 npm test
-
-# 运行特定模块测试
-node tests/loader/data-loader.test.js
 ```
 
-### 代码格式化
+### 代码检查
 
 ```bash
+# 检查代码格式
 npm run lint
+
+# 格式化代码
 npm run format
 ```
 
@@ -183,19 +188,34 @@ npm run format
 
 ## 环境变量
 
-创建 `.env` 文件并配置以下变量：
+详细的环境变量配置说明请参考 **[配置文档](docs/CONFIG.md)**。
+
+**核心配置**：
 
 ```bash
-# 飞书配置（可选，用于推送通知）
-FEISHU_APP_ID=your-app-id
-FEISHU_APP_SECRET=your-app-secret
-FEISHU_RECEIVE_ID=your-open-id
-
-# LLM 配置（用于 AI 分析）
+# LLM 配置（必需）
 LLM_API_KEY=your-api-key
 LLM_BASE_URL=https://api.example.com/v1
 LLM_MODEL=qwen-plus
+LLM_TEMPERATURE=0.7
+LLM_MAX_TOKENS=3000
+LLM_TIMEOUT=60000
+
+# 飞书通知（可选）
+FEISHU_APP_ID=your-app-id
+FEISHU_APP_SECRET=your-app-secret
+FEISHU_RECEIVE_ID=your-open-id
+FEISHU_ENABLED=true
+
+# WeLink 通知（可选）
+WELINK_WEBHOOK_URLS=https://your-webhook-url
+WELINK_ENABLED=false
+
+# 报告配置（可选）
+REPORT_BASE_URL=https://report.wenspock.site
 ```
+
+> 💡 **提示**：`.env` 文件包含敏感信息，已添加到 `.gitignore`，不会被提交到 Git。
 
 ## 项目状态
 
@@ -206,13 +226,16 @@ LLM_MODEL=qwen-plus
 3. ✅ 脚本工具实现（Phase 3）
 4. ✅ 测试体系建立（Phase 4）
 5. ✅ 文档与优化（Phase 5）
+6. ✅ 配置优化与代码清理（Phase 6）
 
 📋 **当前状态**：
 
 - ✅ 主入口文件已创建
-- ✅ 测试体系完善
+- ✅ 测试体系完善（核心模块全覆盖）
 - ✅ 数据目录结构完善
-- ✅ 文档体系完善
+- ✅ 文档体系完善（API、部署指南、配置说明）
+- ✅ 配置管理优化（环境变量、敏感信息保护）
+- ✅ 代码清理完成（删除临时文件、精简文档）
 
 ## License
 
