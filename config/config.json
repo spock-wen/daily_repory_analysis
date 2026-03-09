@@ -33,7 +33,7 @@
   },
   "notifier": {
     "feishu": {
-      "enabled": false,
+      "enabled": true,
       "appId": "${FEISHU_APP_ID}",
       "appSecret": "${FEISHU_APP_SECRET}",
       "receiveId": "${FEISHU_RECEIVE_ID}",

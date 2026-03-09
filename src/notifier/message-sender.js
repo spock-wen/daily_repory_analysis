@@ -1,13 +1,50 @@
+// 使用全局 fetch（Node 18+ 原生支持）
+const fetch = globalThis.fetch;
 const https = require('https');
+
 const logger = require('../utils/logger');
-const config = require('../../config/config.json');
+
+// 确保环境变量已加载
+if (!process.env.FEISHU_APP_ID) {
+  require('dotenv').config();
+}
+
+const rawConfig = require('../../config/config.json');
+
+// 替换配置文件中的环境变量
+function replaceEnvVars(obj) {
+  if (typeof obj === 'string') {
+    return obj.replace(/\$\{([^}]+)\}/g, (match, key) => {
+      return process.env[key] || match;
+    });
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => replaceEnvVars(item));
+  }
+  if (obj && typeof obj === 'object') {
+    const result = {};
+    for (const key in obj) {
+      result[key] = replaceEnvVars(obj[key]);
+    }
+    return result;
+  }
+  return obj;
+}
+
+const config = replaceEnvVars(rawConfig);
+
+const FEISHU_API_BASE = 'https://open.feishu.cn/open-apis';
+
+// Token 缓存
+let cachedToken = null;
+let tokenExpireTime = 0;
 
 /**
  * 推送通知发送器 - 负责发送飞书和 WeLink 通知
  */
 class MessageSender {
   /**
-   * 发送飞书通知
+   * 发送飞书通知（使用 API 认证方式）
    * @param {Object} options - 发送选项
    * @returns {Promise<Object>} 发送结果
    */
@@ -16,10 +53,11 @@ class MessageSender {
       logger.info('发送飞书通知...', { type: options.type, title: options.title });
 
       const message = this.buildFeishuMessage(options);
-      const result = await this.sendWebhookRequest(
-        config.notifications.feishu.webhook_url,
-        message
-      );
+      const accessToken = await this.getFeishuAccessToken();
+      const receiveId = config.notifier.feishu.receiveId;
+      const receiveIdType = config.notifier.feishu.receiveIdType || 'open_id';
+      
+      const result = await this.sendFeishuMessage(accessToken, receiveId, receiveIdType, message);
 
       logger.success('飞书通知发送成功', { type: options.type });
       return { success: true, platform: 'feishu', result };
@@ -30,25 +68,119 @@ class MessageSender {
   }
 
   /**
-   * 发送 WeLink 通知
+   * 获取飞书 access token（带缓存）
+   * @returns {Promise<string>} access token
+   */
+  async getFeishuAccessToken() {
+    if (cachedToken && Date.now() < tokenExpireTime) {
+      return cachedToken;
+    }
+
+    const { appId, appSecret } = config.notifier.feishu;
+
+    let response;
+    try {
+      response = await fetch(`${FEISHU_API_BASE}/auth/v3/tenant_access_token/internal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          app_id: appId,
+          app_secret: appSecret
+        }),
+        timeout: 15000
+      });
+    } catch (error) {
+      throw new Error(`获取飞书 token 请求失败：${error.message}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`获取飞书 token 失败：HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.code !== 0) {
+      throw new Error(`获取飞书 token 失败：${result.msg}`);
+    }
+
+    cachedToken = result.tenant_access_token;
+    tokenExpireTime = Date.now() + (result.expire - 300) * 1000;
+
+    return cachedToken;
+  }
+
+  /**
+   * 发送飞书消息
+   * @param {string} accessToken - access token
+   * @param {string} receiveId - 接收者 ID
+   * @param {string} receiveIdType - ID 类型
+   * @param {Object} message - 消息内容
+   * @returns {Promise<Object>} 响应结果
+   */
+  async sendFeishuMessage(accessToken, receiveId, receiveIdType, message) {
+    const payload = {
+      receive_id: receiveId,
+      msg_type: 'interactive',
+      content: JSON.stringify(message)
+    };
+
+    let response;
+    try {
+      response = await fetch(`${FEISHU_API_BASE}/im/v1/messages?receive_id_type=${receiveIdType}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(payload),
+        timeout: 15000
+      });
+    } catch (error) {
+      throw new Error(`飞书消息请求失败：${error.message}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`飞书消息发送失败：HTTP ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (result.code !== 0) {
+      throw new Error(`飞书推送失败：${result.msg || JSON.stringify(result)}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * 发送 WeLink 通知（支持多个 webhook URL）
    * @param {Object} options - 发送选项
-   * @returns {Promise<Object>} 发送结果
+   * @returns {Promise<Array>} 发送结果数组
    */
   async sendWeLink(options) {
     try {
       logger.info('发送 WeLink 通知...', { type: options.type, title: options.title });
 
       const message = this.buildWeLinkMessage(options);
-      const result = await this.sendWebhookRequest(
-        config.notifications.welink.webhook_url,
-        message
+      const webhookUrls = config.notifier.welink.webhookUrls.split(',').map(url => url.trim());
+      
+      const results = await Promise.all(
+        webhookUrls.map(url => this.sendWebhookRequest(url, message))
       );
 
-      logger.success('WeLink 通知发送成功', { type: options.type });
-      return { success: true, platform: 'welink', result };
+      logger.success(`WeLink 通知发送成功，共 ${results.length} 个群组`, { type: options.type });
+      return results.map((result, index) => ({
+        success: true,
+        platform: 'welink',
+        webhookIndex: index,
+        webhookUrl: webhookUrls[index],
+        result
+      }));
     } catch (error) {
       logger.error(`WeLink 通知发送失败：${error.message}`, options);
-      return { success: false, platform: 'welink', error: error.message };
+      return [{ success: false, platform: 'welink', error: error.message }];
     }
   }
 
@@ -73,61 +205,54 @@ class MessageSender {
   buildFeishuMessage(options) {
     const { type, title, content, reportUrl } = options;
 
+    // 使用飞书文本消息格式，直接展示完整内容
     const message = {
-      msg_type: 'interactive',
-      card: {
-        header: {
-          title: {
-            tag: 'plain_text',
-            content: title
-          },
-          template: 'blue'
-        },
-        elements: [
-          {
-            tag: 'div',
-            text: {
-              tag: 'lark_md',
-              content: content
-            }
-          },
-          {
-            tag: 'action',
-            actions: [
-              {
-                tag: 'button',
-                text: {
-                  tag: 'plain_text',
-                  content: '查看报告'
-                },
-                url: reportUrl,
-                type: 'primary'
-              }
-            ]
-          }
-        ]
-      }
+      elements: [
+        {
+          tag: 'markdown',
+          content: `${title}\n\n${content}`
+        }
+      ]
     };
 
     return message;
   }
 
   /**
-   * 构建 WeLink 消息
+   * 构建 WeLink 消息（文本格式）
    * @param {Object} options - 消息选项
    * @returns {Object} WeLink 消息对象
    */
   buildWeLinkMessage(options) {
     const { type, title, content, reportUrl } = options;
 
+    // 生成时间戳和 UUID
+    const timeStamp = Date.now();
+    const uuid = this.generateUUID();
+
+    // WeLink 消息格式（文本类型）
     const message = {
-      msgtype: 'markdown',
-      markdown: {
-        content: `# ${title}\n\n${content}\n\n[查看报告](${reportUrl})`
-      }
+      messageType: 'text',
+      content: {
+        text: `${title}\n\n${content}\n\n查看报告：${reportUrl}`
+      },
+      timeStamp,
+      uuid
     };
 
     return message;
+  }
+
+  /**
+   * 生成 UUID
+   * @returns {string} UUID 字符串
+   */
+  generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 
   /**
@@ -144,11 +269,12 @@ class MessageSender {
       const options = {
         hostname: url.hostname,
         port: 443,
-        path: url.pathname,
+        path: url.pathname + url.search, // 包含查询参数（token 和 channel）
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': payload.length
+          'Content-Length': payload.length.toString(),
+          'Accept-Charset': 'UTF-8'
         }
       };
 
@@ -192,22 +318,67 @@ class MessageSender {
     };
 
     const date = data.date || data.weekStart || data.month;
-    const stats = data.brief?.stats || {};
-    const projectName = config.project_name || 'GitHub AI Trending';
-
-    const title = `${projectName} ${typeNames[type]} - ${date}`;
+    const trendingRepos = data.brief?.trending_repos || data.trending_repos || [];
+    const aiInsights = data.aiInsights || {};
     
-    const content = `
-📊 **数据概览**
-• 上榜项目：${stats.total_projects || 0}
-• AI 项目：${stats.ai_projects || 0}
-• 平均 Stars: ${stats.avg_stars || 0}
-• 高热项目：${stats.hot_projects || 0}
-
-${data.aiInsights?.summary ? `🤖 **AI 洞察**\n${data.aiInsights.summary.substring(0, 200)}...` : ''}
-    `.trim();
-
+    // 构建标题
+    const title = `🚀 GitHub 热门项目${typeNames[type]} (${date})`;
+    
+    // 构建今日概览
+    let content = `📊 今日概览\n`;
+    content += `今日新增 ${trendingRepos.length} 个热门项目，涵盖多个技术领域\n\n`;
+    
+    // 构建 Top 5 项目（如果数据足够）
+    const top5 = trendingRepos.slice(0, 5);
+    if (top5.length > 0) {
+      content += `🔥 热门项目 TOP 5\n\n`;
+      top5.forEach((repo, index) => {
+        const stars = repo.stars || repo.todayStars || repo.star_increase || 0;
+        content += `${index + 1}️⃣ ${repo.name || repo.repo || repo.fullName} - ⭐ ${stars}\n`;
+        content += `${repo.desc || repo.description || ''}\n`;
+        content += `🏷️ ${repo.language || 'Unknown'}\n\n`;
+      });
+    }
+    
+    // 构建核心洞察
+    if (aiInsights.oneLiner || aiInsights.oneLineSummary || aiInsights.hypeIndex || aiInsights.hot) {
+      content += `💡 核心洞察\n`;
+      if (aiInsights.oneLiner) {
+        content += `${aiInsights.oneLiner}\n\n`;
+      } else if (aiInsights.oneLineSummary) {
+        content += `${aiInsights.oneLineSummary}\n\n`;
+      }
+      if (aiInsights.hypeIndex) {
+        const hypeScore = typeof aiInsights.hypeIndex === 'object' ? aiInsights.hypeIndex.score : aiInsights.hypeIndex;
+        const hypeReason = typeof aiInsights.hypeIndex === 'object' ? aiInsights.hypeIndex.reason : '';
+        content += `📈 炒作指数：⚠️ ${hypeScore >= 4 ? '偏热' : hypeScore <= 2 ? '偏冷' : '正常'} (${hypeScore}/5)\n`;
+        if (hypeReason) content += `${hypeReason}\n\n`;
+      }
+      if (aiInsights.hot && aiInsights.hot.length > 0) {
+        content += `\n🔥 今日热点\n`;
+        aiInsights.hot.forEach((hot, idx) => {
+          content += `${idx + 1}. ${hot}\n\n`;
+        });
+      }
+    }
+    
+    // 构建行动建议
+    const actions = aiInsights.action || aiInsights.actions || aiInsights.recommendations || [];
+    if (actions && (Array.isArray(actions) ? actions.length > 0 : false)) {
+      content += `\n🎯 行动建议\n`;
+      (Array.isArray(actions) ? actions : [actions]).forEach((action, idx) => {
+        if (typeof action === 'string') {
+          content += `${idx + 1}. ${action}\n\n`;
+        } else if (action.developers || action.development) {
+          content += `${idx + 1}. ${action.developers || action.development}\n\n`;
+        }
+      });
+    }
+    
+    // 添加报告链接
     const reportUrl = this.buildReportUrl(type, date);
+    content += `\n📋 查看详细报告：\n${reportUrl}\n\n`;
+    content += `⏰ 更新时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`;
 
     return {
       type,
