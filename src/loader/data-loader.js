@@ -149,18 +149,26 @@ class DataLoader {
     
     return {
       ...rawData,
-      trending_repos: projects.map(project => ({
-        name: project.fullName || project.name,
-        description: project.descZh || project.desc || '',
-        url: project.url || `https://github.com/${project.fullName}`,
-        stars: project.stars || 0,
-        forks: project.forks || 0,
-        language: project.language || '',
-        topics: project.topics || [],
-        isAI: project.isAI || false,
-        analysis: project.analysis || null,
-        todayStars: parseInt(project.todayStars) || 0
-      })),
+      trending_repos: projects.map(project => {
+        // 提取 analysis 中的核心功能、使用场景和热度趋势数据
+        const analysis = project.analysis || null;
+        return {
+          name: project.fullName || project.name,
+          description: project.descZh || project.desc || '',
+          url: project.url || `https://github.com/${project.fullName}`,
+          stars: project.stars || 0,
+          forks: project.forks || 0,
+          language: project.language || '',
+          topics: project.topics || [],
+          isAI: project.isAI || false,
+          // 将 analysis 数据映射到 HTML 生成器期望的字段名
+          core_features: analysis?.coreFunctions || [],
+          use_cases: analysis?.useCases || [],
+          trend_data: analysis?.trends || [],
+          analysis: analysis,
+          todayStars: parseInt(project.todayStars) || 0
+        };
+      }),
       stats: {
         // 使用下划线命名（HTML 生成器期望的格式）
         total_projects: originalStats.total_projects || originalStats.totalProjects || projects.length,

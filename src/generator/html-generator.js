@@ -327,7 +327,7 @@ class HTMLGenerator {
     </header>
 
     ${this.renderStatsSection(stats)}
-    ${this.renderAIInsightsSection(aiInsights)}
+    ${this.renderAIInsightsSection(aiInsights, trendingRepos)}
     ${this.renderProjectListSection(trendingRepos)}
   </div>
 
@@ -387,8 +387,9 @@ class HTMLGenerator {
                   ${index + 1}. ${project.name}
                 </a>
                 <div class="project-stats">
-                  <span>⭐ ${project.stars || 0}</span>
-                  <span>🍴 ${project.forks || 0}</span>
+                  <span title="总星数">⭐ ${project.stars || 0}</span>
+                  <span title="今日星数">🔥 ${project.todayStars || 0}</span>
+                  <span title="分支数">🌿 ${project.forks || 0}</span>
                   ${project.language ? `<span>📝 ${project.language}</span>` : ''}
                 </div>
               </div>
@@ -435,8 +436,10 @@ class HTMLGenerator {
 
   /**
    * 渲染 AI 洞察部分
+   * @param {Object} aiInsights - AI 洞察数据
+   * @param {Array} trendingRepos - 项目列表，用于匹配项目链接
    */
-  renderAIInsightsSection(aiInsights) {
+  renderAIInsightsSection(aiInsights, trendingRepos = []) {
     if (!aiInsights) {
       return '<section><h2>🤖 AI 深度洞察</h2><p>AI 分析尚未完成</p></section>';
     }
@@ -449,6 +452,30 @@ class HTMLGenerator {
     const hot = aiInsights.hot || [];
     const hypeIndex = aiInsights.hypeIndex;
 
+    // 创建项目名到 URL 的映射
+    const projectUrlMap = {};
+    trendingRepos.forEach(project => {
+      if (project.name && project.url) {
+        projectUrlMap[project.name] = project.url;
+      }
+    });
+
+    // 辅助函数：从文本中提取项目名并生成带链接的 HTML
+    const linkifyProjectName = (text) => {
+      if (!text) return text;
+      
+      // 全局匹配所有 owner/repo 格式（支持中英文冒号和括号等分隔符）
+      const projectRegex = /([a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+)/g;
+      
+      return text.replace(projectRegex, (match, projectName) => {
+        const url = projectUrlMap[projectName];
+        if (url) {
+          return `<a href="${url}" class="project-link" target="_blank">${projectName}</a>`;
+        }
+        return match;
+      });
+    };
+
     return `
       <section class="ai-insights">
         <h2>🤖 AI 深度洞察</h2>
@@ -457,14 +484,14 @@ class HTMLGenerator {
         ${hypeIndex ? `
           <div style="margin-bottom: 20px; padding: 15px; background: var(--bg-secondary); border-radius: 6px; border-left: 3px solid var(--accent);">
             <h4 style="color: var(--accent); margin-bottom: 8px;">🔥 热度指数：${hypeIndex.score}/5</h4>
-            <p style="color: var(--text-secondary);">${hypeIndex.reason || ''}</p>
+            <p style="color: var(--text-secondary);">${linkifyProjectName(hypeIndex.reason) || ''}</p>
           </div>
         ` : ''}
         
         ${hot && hot.length > 0 ? `
           <h3>🔥 热点项目</h3>
           <ul style="color: var(--text-secondary); padding-left: 20px; margin-bottom: 20px;">
-            ${hot.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+            ${hot.map(item => `<li style="margin-bottom: 8px;">${linkifyProjectName(item)}</li>`).join('')}
           </ul>
         ` : ''}
         
@@ -483,14 +510,14 @@ class HTMLGenerator {
         ${trends.length > 0 ? `
           <h3>📈 趋势观察</h3>
           <ul style="color: var(--text-secondary); padding-left: 20px; margin-bottom: 20px;">
-            ${Array.isArray(trends) ? trends.map(trend => `<li>${trend}</li>`).join('') : ''}
+            ${Array.isArray(trends) ? trends.map(trend => `<li>${linkifyProjectName(trend)}</li>`).join('') : ''}
           </ul>
         ` : ''}
         
         ${recommendations.length > 0 ? `
           <h3>💡 推荐建议</h3>
           <ul style="color: var(--text-secondary); padding-left: 20px;">
-            ${Array.isArray(recommendations) ? recommendations.map(rec => `<li>${rec}</li>`).join('') : ''}
+            ${Array.isArray(recommendations) ? recommendations.map(rec => `<li>${linkifyProjectName(rec)}</li>`).join('') : ''}
           </ul>
         ` : ''}
       </section>
