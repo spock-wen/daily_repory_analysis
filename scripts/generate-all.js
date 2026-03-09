@@ -74,6 +74,11 @@ async function generateAllReports() {
   console.log('-'.repeat(60));
   results.monthly = runScript(path.join(__dirname, 'generate-monthly.js'), [month]);
 
+  // 生成首页
+  console.log('\n🏠 生成首页...');
+  console.log('-'.repeat(60));
+  const indexResult = runScript(path.join(__dirname, 'generate-index.js'), []);
+
   // 汇总结果
   console.log('\n' + '='.repeat(60));
   console.log('📊 生成结果汇总');
@@ -82,15 +87,17 @@ async function generateAllReports() {
   const successCount = [
     results.daily?.success,
     results.weekly?.success,
-    results.monthly?.success
+    results.monthly?.success,
+    indexResult?.success
   ].filter(Boolean).length;
   
   console.log(`\n日报：${results.daily?.success ? '✅ 成功' : '❌ 失败'}`);
   console.log(`周报：${results.weekly?.success ? '✅ 成功' : '❌ 失败'}`);
   console.log(`月报：${results.monthly?.success ? '✅ 成功' : '❌ 失败'}`);
-  console.log(`\n总计：${successCount}/3 成功\n`);
+  console.log(`首页：${indexResult?.success ? '✅ 成功' : '❌ 失败'}`);
+  console.log(`\n总计：${successCount}/4 成功\n`);
 
-  if (successCount === 3) {
+  if (successCount === 4) {
     console.log('🎉 所有报告生成完成！\n');
     process.exit(0);
   } else {

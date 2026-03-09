@@ -9,6 +9,7 @@
     "generate:monthly": "node scripts/generate-monthly.js",
     "generate:all": "node scripts/generate-all.js",
     "generate:index": "node scripts/generate-index.js",
+    "update:index": "node scripts/update-index.js",
     "test": "node --test tests/**/*.test.js",
     "test:loader": "node --test tests/loader/*.test.js",
     "test:analyzer": "node --test tests/analyzer/*.test.js",
