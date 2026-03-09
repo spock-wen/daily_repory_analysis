@@ -230,11 +230,11 @@ class MessageSender {
     const timeStamp = Date.now();
     const uuid = this.generateUUID();
 
-    // WeLink 消息格式（文本类型）
+    // WeLink 消息格式（文本类型）- 简化内容，避免过长
     const message = {
       messageType: 'text',
       content: {
-        text: `${title}\n\n${content}\n\n查看报告：${reportUrl}`
+        text: `${title}\n\n查看报告：${reportUrl}`
       },
       timeStamp,
       uuid
@@ -288,15 +288,28 @@ class MessageSender {
         res.on('end', () => {
           try {
             const result = JSON.parse(responseData);
-            resolve(result);
+            // 检查 WeLink 返回码
+            if (result.code === '0' || result.code === 0 || result.errcode === 0) {
+              resolve(result);
+            } else {
+              // 返回非成功状态码
+              resolve({ success: false, result, error: `WeLink return code: ${result.code || result.errcode}` });
+            }
           } catch (error) {
-            resolve({ raw: responseData });
+            // 解析失败，可能是 HTML 错误页面
+            resolve({ success: false, error: 'Response parse error', raw: responseData.substring(0, 200) });
           }
         });
       });
 
       req.on('error', (error) => {
         reject(error);
+      });
+
+      req.setTimeout(15000);
+      req.on('timeout', () => {
+        req.destroy();
+        resolve({ success: false, error: 'Request timeout' });
       });
 
       req.write(payload);
