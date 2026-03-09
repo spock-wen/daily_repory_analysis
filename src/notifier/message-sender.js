@@ -52,7 +52,11 @@ class MessageSender {
     try {
       logger.info('发送飞书通知...', { type: options.type, title: options.title });
 
-      const message = this.buildFeishuMessage(options);
+      // 如果已有 content，直接使用；否则构建飞书消息
+      const message = options.content 
+        ? this.buildFeishuMessageWithContent(options)
+        : this.buildFeishuMessage(options);
+      
       const accessToken = await this.getFeishuAccessToken();
       const receiveId = config.notifier.feishu.receiveId;
       const receiveIdType = config.notifier.feishu.receiveIdType || 'open_id';
@@ -198,7 +202,28 @@ class MessageSender {
   }
 
   /**
-   * 构建飞书消息
+   * 构建飞书消息（使用已有 content）
+   * @param {Object} options - 消息选项
+   * @returns {Object} 飞书消息对象
+   */
+  buildFeishuMessageWithContent(options) {
+    const { title, content } = options;
+
+    // 使用飞书文本消息格式，直接展示完整内容
+    const message = {
+      elements: [
+        {
+          tag: 'markdown',
+          content: `${title}\n\n${content}`
+        }
+      ]
+    };
+
+    return message;
+  }
+
+  /**
+   * 构建飞书消息（旧版兼容）
    * @param {Object} options - 消息选项
    * @returns {Object} 飞书消息对象
    */
@@ -224,17 +249,45 @@ class MessageSender {
    * @returns {Object} WeLink 消息对象
    */
   buildWeLinkMessage(options) {
-    const { type, title, content, reportUrl } = options;
+    const { type, title, content, reportUrl, top5, insight } = options;
 
     // 生成时间戳和 UUID
     const timeStamp = Date.now();
     const uuid = this.generateUUID();
 
-    // WeLink 消息格式（文本类型）- 简化内容，避免过长
+    // 构建详细的 WeLink 消息
+    let messageText = `${title}\n\n`;
+    
+    // 今日概览
+    if (options.summary) {
+      messageText += `📊 ${options.summary}\n\n`;
+    }
+    
+    // TOP5 项目
+    if (top5 && top5.length > 0) {
+      messageText += `🔥 TOP5 项目：\n`;
+      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+      top5.forEach((repo, i) => {
+        const medal = medals[i] || `${i + 1}️⃣`;
+        const stars = repo.todayStars || repo.stars || 0;
+        messageText += `${medal} ${repo.name} +${stars}⭐\n`;
+      });
+      messageText += '\n';
+    }
+    
+    // 核心洞察
+    if (insight) {
+      messageText += `💡 核心洞察：\n${insight}\n\n`;
+    }
+    
+    // 报告链接
+    messageText += `📋 完整报告：\n${reportUrl}`;
+
+    // WeLink 消息格式（文本类型）
     const message = {
       messageType: 'text',
       content: {
-        text: `${title}\n\n查看报告：${reportUrl}`
+        text: messageText
       },
       timeStamp,
       uuid
@@ -324,6 +377,93 @@ class MessageSender {
    * @returns {Object} 通知内容
    */
   generateNotificationContent(type, data) {
+    const typeNames = {
+      daily: '日报',
+      weekly: '周报',
+      monthly: '月报'
+    };
+
+    const date = data.date || data.weekStart || data.month;
+    const trendingRepos = data.brief?.trending_repos || data.trending_repos || [];
+    const aiInsights = data.aiInsights || {};
+    
+    // 构建标题
+    const title = `🚀 GitHub 热门项目${typeNames[type]} (${date})`;
+    
+    // 按今日 stars 排序，获取 TOP5
+    const sortedRepos = [...trendingRepos].sort((a, b) => {
+      const aStars = parseInt(a.todayStars) || parseInt(a.stars) || 0;
+      const bStars = parseInt(b.todayStars) || parseInt(b.stars) || 0;
+      return bStars - aStars;
+    });
+    const top5 = sortedRepos.slice(0, 5).map(repo => ({
+      name: repo.name || repo.repo || repo.fullName,
+      todayStars: parseInt(repo.todayStars) || parseInt(repo.stars) || 0,
+      url: repo.url || `https://github.com/${repo.name}`
+    }));
+    
+    // 提取核心洞察（一句话总结）
+    let insight = '';
+    if (aiInsights.oneLiner) {
+      insight = aiInsights.oneLiner.substring(0, 100);
+    } else if (aiInsights.oneLineSummary) {
+      insight = aiInsights.oneLineSummary.substring(0, 100);
+    } else if (aiInsights.summary) {
+      insight = aiInsights.summary.substring(0, 100);
+    }
+    
+    // 构建今日概览
+    const summary = `${trendingRepos.length} 个热门项目`;
+    
+    // 构建报告链接
+    const reportUrl = this.buildReportUrl(type, date);
+    
+    return {
+      type,
+      title,
+      summary,
+      top5,
+      insight,
+      reportUrl,
+      // 保留完整 content 用于飞书
+      content: this.buildFeishuContent(type, trendingRepos, aiInsights, reportUrl)
+    };
+  }
+
+  /**
+   * 构建飞书消息内容（详细版）
+   */
+  buildFeishuContent(type, trendingRepos, aiInsights, reportUrl) {
+    let content = `📊 今日概览\n`;
+    content += `今日新增 ${trendingRepos.length} 个热门项目，涵盖多个技术领域\n\n`;
+    
+    const top5 = trendingRepos.slice(0, 5);
+    if (top5.length > 0) {
+      content += `🔥 热门项目 TOP 5\n\n`;
+      top5.forEach((repo, index) => {
+        const stars = repo.stars || repo.todayStars || repo.star_increase || 0;
+        content += `${index + 1}️⃣ ${repo.name || repo.repo || repo.fullName} - ⭐ ${stars}\n`;
+        content += `${repo.desc || repo.description || ''}\n`;
+        content += `🏷️ ${repo.language || 'Unknown'}\n\n`;
+      });
+    }
+    
+    if (aiInsights.oneLiner || aiInsights.oneLineSummary) {
+      content += `💡 核心洞察\n`;
+      content += `${aiInsights.oneLiner || aiInsights.oneLineSummary}\n\n`;
+    }
+    
+    content += `\n📋 查看详细报告：\n${reportUrl}\n\n`;
+    content += `⏰ 更新时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`;
+    
+    return content;
+  }
+
+  /**
+   * 生成报告通知内容（旧版兼容）
+   * @deprecated 使用 generateNotificationContent 替代
+   */
+  generateNotificationContentOld(type, data) {
     const typeNames = {
       daily: '日报',
       weekly: '周报',

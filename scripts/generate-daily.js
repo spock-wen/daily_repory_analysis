@@ -75,12 +75,15 @@ async function generateDailyReport() {
     const sender = new MessageSender();
     const notificationContent = sender.generateNotificationContent('daily', dailyData);
     
-    // 构建通知消息
+    // 构建通知消息（包含 TOP5 和核心洞察）
     const notifyOptions = {
       type: 'daily',
       title: notificationContent.title,
       content: notificationContent.content,
-      reportUrl: notificationContent.reportUrl
+      reportUrl: notificationContent.reportUrl,
+      summary: notificationContent.summary,
+      top5: notificationContent.top5,
+      insight: notificationContent.insight
     };
 
     // 发送通知（如果配置了 webhook）
