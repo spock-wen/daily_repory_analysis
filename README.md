@@ -25,15 +25,15 @@
 
 ## 新架构特性
 
-✨ **计划中的功能**：
+✨ **已实现的功能**：
 
-- 📊 **统一架构**：日报、周报、月报使用相同的生成流程
-- 🧠 **统一 AI 分析**：所有报告类型共享 AI 分析模块
-- 🏠 **统一主页**：一个页面管理所有报告
-- 📦 **模块化设计**：数据加载、AI 分析、HTML 生成、推送通知完全解耦
-- 💻 **统一 CLI**：简单的命令行接口
+- ✅ **统一架构**：日报、周报、月报使用相同的生成流程
+- ✅ **统一 AI 分析**：所有报告类型共享 AI 分析模块
+- ✅ **统一主页**：一个页面管理所有报告
+- ✅ **模块化设计**：数据加载、AI 分析、HTML 生成、推送通知完全解耦
+- ✅ **统一 CLI**：简单的命令行接口
 
-## 目录结构（规划中）
+## 目录结构
 
 ```
 项目根目录/
@@ -42,23 +42,44 @@
 │   ├── analyzer/             # AI 分析
 │   ├── generator/            # HTML 生成
 │   ├── notifier/             # 推送通知
-│   └── utils/                # 工具函数
+│   ├── utils/                # 工具函数
+│   └── index.js              # 主入口文件
 ├── scripts/                  # 可执行脚本
-│   ├── generate-daily.js
-│   ├── generate-weekly.js
-│   ├── generate-monthly.js
-│   ├── generate-all.js
-│   └── generate-index.js
+│   ├── generate-daily.js     # 生成日报
+│   ├── generate-weekly.js    # 生成周报
+│   ├── generate-monthly.js   # 生成月报
+│   ├── generate-all.js       # 生成所有报告
+│   ├── generate-index.js     # 生成首页
+│   ├── update-index.js       # 更新首页
+│   └── help.js               # 帮助文档
+├── tests/                    # 测试文件
+│   ├── loader/               # 数据加载测试
+│   ├── analyzer/             # AI 分析测试
+│   ├── generator/            # HTML 生成测试
+│   └── notifier/             # 通知发送测试
 ├── data/                     # 数据目录
 │   ├── briefs/               # 输入数据
+│   │   ├── daily/
+│   │   ├── weekly/
+│   │   └── monthly/
 │   └── insights/             # AI 分析结果
+│       ├── daily/
+│       ├── weekly/
+│       └── monthly/
 ├── reports/                  # HTML 输出
 │   ├── daily/
 │   ├── weekly/
 │   ├── monthly/
 │   └── index.html            # 统一主页
-├── archive/                  # 历史数据（保留参考）
-└── config/                   # 配置文件
+├── public/                   # 静态资源
+│   └── css/                  # 样式文件
+├── config/                   # 配置文件
+│   ├── config.json           # 项目配置
+│   └── prompts.json          # AI 提示词
+├── docs/                     # 文档
+│   ├── API.md                # API 文档
+│   └── DEPLOYMENT.md         # 部署指南
+└── todo/                     # 待办计划
 ```
 
 ## 参考数据
@@ -69,13 +90,68 @@
 - 历史报告样式参考
 - 数据结构示例
 
-## 开发进度
+## 快速开始
 
-详细的重构计划请参考：
+### 1. 安装依赖
 
-- [架构规格说明](.trae/specs/simplify-architecture/spec.md)
-- [任务清单](.trae/specs/simplify-architecture/tasks.md)
-- [检查清单](.trae/specs/simplify-architecture/checklist.md)
+```bash
+npm install
+```
+
+### 2. 配置环境变量
+
+```bash
+cp .env.example .env
+# 编辑 .env 文件，填入 LLM API 密钥等配置
+```
+
+### 3. 生成报告
+
+```bash
+# 生成日报
+npm run generate:daily -- 2026-03-08
+
+# 生成周报
+npm run generate:weekly -- 2026-W11
+
+# 生成月报
+npm run generate:monthly -- 2026-03
+
+# 生成所有报告
+npm run generate:all
+
+# 生成首页
+npm run generate:index
+```
+
+### 4. 查看报告
+
+用浏览器打开 `reports/index.html` 查看首页。
+
+## 文档
+
+- **[部署与开发指南](docs/GUIDE.md)** - 快速开始、Git 配置、自动化部署
+- **[API 文档](docs/API.md)** - 详细的 API 使用说明
+- **[更新指南](docs/index-update-guide.md)** - 首页更新说明
+
+## 开发与测试
+
+### 运行测试
+
+```bash
+# 运行所有测试
+npm test
+
+# 运行特定模块测试
+node tests/loader/data-loader.test.js
+```
+
+### 代码格式化
+
+```bash
+npm run lint
+npm run format
+```
 
 ## 前置项目
 
@@ -101,15 +177,24 @@ LLM_BASE_URL=https://api.example.com/v1
 LLM_MODEL=qwen-plus
 ```
 
-## 下一步
+## 项目状态
 
-1. ✅ 创建新分支 `feature/new-architecture`
-2. ✅ 清理旧文件，保留参考数据
-3. ⏳ 实施 Phase 1: 基础架构搭建
-4. ⏳ 实施 Phase 2: 核心模块实现
-5. ⏳ 实施 Phase 3: 脚本工具实现
-6. ⏳ 实施 Phase 4: 迁移与测试
-7. ⏳ 实施 Phase 5: 文档与优化
+✅ **已完成**：
+
+1. ✅ 基础架构搭建（Phase 1）
+2. ✅ 核心模块实现（Phase 2）
+3. ✅ 脚本工具实现（Phase 3）
+4. ✅ 测试体系建立（Phase 4）
+5. ✅ 文档与优化（Phase 5）
+
+📋 **当前状态**：
+
+- ✅ 主入口文件已创建
+- ✅ 测试目录结构已重组
+- ✅ 数据目录结构已完善
+- ✅ 临时文件已清理
+- ✅ API 文档已创建
+- ✅ 部署指南已创建
 
 ## License
 

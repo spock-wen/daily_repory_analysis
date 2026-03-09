@@ -3,6 +3,18 @@ data/**/*.tmp
 data/**/*.bak
 data/**/*.old
 
+# 生成的 HTML 报告（构建产物，不提交）
+reports/daily/*.html
+reports/weekly/*.html
+reports/monthly/*.html
+reports/index.html
+
+# 保留目录结构
+!reports/.gitkeep
+!reports/daily/.gitkeep
+!reports/weekly/.gitkeep
+!reports/monthly/.gitkeep
+
 # 环境变量（敏感）
 .env
 .env.local
