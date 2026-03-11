@@ -174,7 +174,7 @@ class HTMLGenerator {
             <div class="project-card">
               <div class="project-header">
                 <a href="${project.url || '#'}" class="project-name" target="_blank">
-                  ${index + 1}. ${project.name}
+                  ${index + 1}. ${project.fullName || project.repo || project.name}
                 </a>
                 <div class="project-stats">
                   <span class="stat-badge" title="总星数">
@@ -265,8 +265,19 @@ class HTMLGenerator {
     // 创建项目名到 URL 的映射
     const projectUrlMap = {};
     trendingRepos.forEach(project => {
-      if (project.name && project.url) {
-        projectUrlMap[project.name] = project.url;
+      if (project.url) {
+        // 使用 fullName (owner/repo 格式) 作为键
+        if (project.fullName) {
+          projectUrlMap[project.fullName] = project.url;
+        }
+        // 同时支持 repo 字段
+        if (project.repo) {
+          projectUrlMap[project.repo] = project.url;
+        }
+        // 兼容：如果 name 也是 owner/repo 格式，也加入映射
+        if (project.name && project.name.includes('/')) {
+          projectUrlMap[project.name] = project.url;
+        }
       }
     });
 
@@ -275,12 +286,15 @@ class HTMLGenerator {
       if (!text) return text;
       
       // 全局匹配所有 owner/repo 格式（支持中英文冒号和括号等分隔符）
+      // 改进：匹配更广泛的项目名格式，包括数字、连字符、下划线等
       const projectRegex = /([a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+)/g;
       
       return text.replace(projectRegex, (match, projectName) => {
-        const url = projectUrlMap[projectName];
+        // 清理项目名（去除可能的标点符号）
+        const cleanProjectName = projectName.replace(/[.,:;!?)]+$/, '');
+        const url = projectUrlMap[cleanProjectName];
         if (url) {
-          return `<a href="${url}" class="project-link" target="_blank">${projectName}</a>`;
+          return `<a href="${url}" class="project-link" target="_blank">${cleanProjectName}</a>`;
         }
         return match;
       });
@@ -623,7 +637,7 @@ class HTMLGenerator {
     return `
         <div class="project-card" style="margin-bottom: 8px;">
             <div class="project-header">
-                <a href="${project.url || '#'}" target="_blank" class="project-name">${project.name}</a>
+                <a href="${project.url || '#'}" target="_blank" class="project-name">${project.fullName || project.repo || project.name}</a>
                 <div class="project-stats">
                     <span class="stat-badge" title="总星数">
                         <svg class="star-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
