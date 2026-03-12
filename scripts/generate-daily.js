@@ -78,7 +78,8 @@ async function findDataFile(targetDate) {
     // 有效性判断：
     // 1. 文件是今天生成的（从今天 0:00 到现在）
     // 2. 或者文件是在过去 30 小时内生成的（容错窗口）
-    const isValid = hoursSinceTodayStart > -2 && hoursAgo < 30;
+    // 3. 或者文件是在过去 7 天内生成的（宽松模式，用于手动重新生成）
+    const isValid = hoursSinceTodayStart > -2 && hoursAgo < 30 || hoursAgo < 168;
     
     if (isValid) {
       return {

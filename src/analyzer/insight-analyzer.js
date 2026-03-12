@@ -124,7 +124,7 @@ class InsightAnalyzer {
     
     // 提取项目关键信息
     const projects = trendingRepos.map(repo => ({
-      name: repo.name,
+      name: repo.fullName || repo.name,
       description: repo.description || '',
       stars: repo.stars || 0,
       forks: repo.forks || 0,
