@@ -4,6 +4,7 @@ const https = require('https');
 
 const logger = require('../utils/logger');
 const { getConfig, getEnvBool } = require('../utils/config');
+const { generateFeishuWeekly, generateWeLinkWeekly } = require('./weekly-templates');
 
 // 加载配置
 const config = getConfig();
@@ -224,6 +225,74 @@ class MessageSender {
   }
 
   /**
+   * 发送周报到所有平台
+   * @param {Object} weeklyData - 周报数据
+   * @param {Object} insights - 洞察数据
+   * @param {Object} options - 配置选项
+   * @returns {Promise<Object>} { feishu: Object, welink: Object, logs: string[] }
+   */
+  async sendWeeklyAll(weeklyData, insights, options = {}) {
+    const results = {
+      feishu: null,
+      welink: null,
+      logs: []
+    };
+    
+    try {
+      // 生成内容
+      const content = this.generateNotificationContent('weekly', weeklyData, insights);
+      
+      // 发送飞书
+      if (options.platforms?.includes('feishu') || !options.platforms) {
+        const feishuOptions = {
+          type: 'weekly',
+          title: 'GitHub 周报洞察',
+          content: content.feishu
+        };
+        
+        results.feishu = await this.sendFeishu(feishuOptions);
+        results.logs.push(`Feishu: ${results.feishu.success ? 'success' : 'failed'}`);
+        
+        if (results.feishu.success) {
+          logger.info('✅ Feishu weekly notification sent successfully');
+        } else {
+          logger.error('❌ Feishu weekly notification failed', results.feishu.error);
+        }
+      }
+      
+      // 发送 WeLink
+      if (options.platforms?.includes('welink') || !options.platforms) {
+        const welinkOptions = {
+          type: 'weekly',
+          title: 'GitHub 趋势周报',
+          content: content.welink
+        };
+        
+        results.welink = await this.sendWeLink(welinkOptions);
+        
+        // WeLink 返回的是数组，检查是否有成功的
+        const successCount = Array.isArray(results.welink) 
+          ? results.welink.filter(r => r.success).length 
+          : (results.welink.success ? 1 : 0);
+        
+        results.logs.push(`WeLink: ${successCount > 0 ? 'success' : 'failed'}`);
+        
+        if (successCount > 0) {
+          logger.info('✅ WeLink weekly notification sent successfully');
+        } else {
+          logger.error('❌ WeLink weekly notification failed', results.welink);
+        }
+      }
+      
+    } catch (error) {
+      logger.error('sendWeeklyAll error:', error);
+      throw error;
+    }
+    
+    return results;
+  }
+
+  /**
    * 构建飞书消息（使用已有 content）
    * @param {Object} options - 消息选项
    * @returns {Object} 飞书消息对象
@@ -231,7 +300,12 @@ class MessageSender {
   buildFeishuMessageWithContent(options) {
     const { title, content } = options;
 
-    // 使用飞书文本消息格式，直接展示完整内容
+    // 如果 content 已经是 Interactive 卡片对象，直接返回
+    if (content && typeof content === 'object' && content.config && content.elements) {
+      return content;
+    }
+
+    // 否则使用文本消息格式
     const message = {
       elements: [
         {
@@ -383,9 +457,19 @@ class MessageSender {
    * 生成报告通知内容
    * @param {string} type - 报告类型 (daily/weekly/monthly)
    * @param {Object} data - 报告数据
+   * @param {Object} insights - 洞察数据（周报专用）
    * @returns {Object} 通知内容
    */
-  generateNotificationContent(type, data) {
+  generateNotificationContent(type, data, insights) {
+    // 周报专用逻辑
+    if (type === 'weekly' && insights) {
+      return {
+        type,
+        feishu: generateFeishuWeekly(data, insights),
+        welink: generateWeLinkWeekly(data, insights)
+      };
+    }
+    
     const typeNames = {
       daily: '日报',
       weekly: '周报',

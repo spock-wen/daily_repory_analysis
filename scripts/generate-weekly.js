@@ -11,6 +11,7 @@
 require('dotenv').config();
 
 const path = require('path');
+const fs = require('fs');
 const DataLoader = require('../src/loader/data-loader');
 const InsightAnalyzer = require('../src/analyzer/insight-analyzer');
 const HTMLGenerator = require('../src/generator/html-generator');
@@ -76,33 +77,76 @@ async function generateWeeklyReport() {
     // 步骤 4: 发送通知（可选）
     console.log('📤 步骤 4/4: 发送通知...');
     const sender = new MessageSender();
-    const notificationContent = sender.generateNotificationContent('weekly', weeklyData);
+    let results = [];
     
-    // 构建通知消息
-    const notifyOptions = {
-      type: 'weekly',
-      title: notificationContent.title,
-      content: notificationContent.content,
-      reportUrl: notificationContent.reportUrl
-    };
+    // 加载洞察数据
+    const insightsPath = path.join(__dirname, '..', 'data', 'insights', 'weekly', `insights-${week}.json`);
+    let insights = null;
+    let notificationContent = null;
+    
+    if (fs.existsSync(insightsPath)) {
+      try {
+        insights = JSON.parse(fs.readFileSync(insightsPath, 'utf-8'));
+        console.log(`   ✅ 洞察数据已加载：${insightsPath}`);
+      } catch (error) {
+        console.warn(`   ⚠️  洞察数据加载失败，使用降级模式：${error.message}`);
+      }
+    } else {
+      console.warn(`   ⚠️  洞察数据不存在，使用降级模式：${insightsPath}`);
+    }
+    
+    // 发送周报通知（使用专用方法）
+    if (insights) {
+      try {
+        // 确保 weeklyData 有 week 字段
+        const weeklyDataForNotification = {
+          ...weeklyData,
+          week: weeklyData.week || week
+        };
+        
+        const results = await sender.sendWeeklyAll(weeklyDataForNotification, insights, {
+          platforms: ['feishu', 'welink']
+        });
+        
+        // 构建报告 URL
+        notificationContent = sender.generateNotificationContent('weekly', weeklyDataForNotification, insights);
+        
+        console.log(`   ✅ 通知发送完成`);
+        console.log(`      - 飞书：${results.feishu?.success ? '成功' : '失败'}`);
+        console.log(`      - WeLink: ${results.welink ? (Array.isArray(results.welink) ? results.welink.filter(r => r.success).length + '成功' : results.welink.success ? '成功' : '失败') : '未发送'}\n`);
+      } catch (error) {
+        console.error(`   ❌ 通知发送失败：${error.message}`);
+      }
+    } else {
+      // 降级模式：使用旧版通知方式
+      console.log('   ℹ️  使用降级模式发送通知...');
+      notificationContent = sender.generateNotificationContent('weekly', weeklyData);
+      
+      const notifyOptions = {
+        type: 'weekly',
+        title: notificationContent.title,
+        content: notificationContent.content,
+        reportUrl: notificationContent.reportUrl
+      };
 
-    // 发送通知（如果配置了 webhook）
-    const results = await sender.sendAll(notifyOptions);
-    const successCount = results.filter(r => r.success).length;
-    console.log(`   ✅ 通知发送：${successCount}/${results.length} 成功\n`);
+      const results = await sender.sendAll(notifyOptions);
+      const successCount = results.filter(r => r.success).length;
+      console.log(`   ✅ 通知发送（降级）：${successCount}/${results.length} 成功\n`);
+    }
 
     // 完成
     console.log('='.repeat(60));
     console.log('🎉 周报生成完成！');
     console.log('='.repeat(60));
     console.log(`📄 报告文件：${reportPath}`);
-    console.log(`🔗 访问链接：${notificationContent.reportUrl}\n`);
+    const reportUrl = notificationContent?.reportUrl || `https://report.wenspock.site/weekly/weekly-${week}.html`;
+    console.log(`🔗 访问链接：${reportUrl}\n`);
 
     return {
       success: true,
       week,
       reportPath,
-      reportUrl: notificationContent.reportUrl,
+      reportUrl,
       projectCount,
       notificationResults: results
     };

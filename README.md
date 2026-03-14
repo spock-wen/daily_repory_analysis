@@ -34,6 +34,7 @@
 - ✅ **统一 CLI**：简单的命令行接口
 - ✅ **灵活配置**：环境变量管理敏感信息，支持服务启用/禁用控制
 - ✅ **完善测试**：核心模块全覆盖的测试体系
+- ✅ **Ollama 云端集成**：支持 Ollama 云端 API，无需本地 GPU 即可运行 AI 分析
 
 ## 目录结构
 
@@ -103,10 +104,14 @@ cp .env.example .env
 
 **必要配置项**：
 - `LLM_API_KEY` - LLM API 密钥（必需）
+- `LLM_BASE_URL` - LLM API 基础 URL（默认：https://ollama.com）
+- `LLM_MODEL` - 模型名称（默认：qwen3.5）
 - `FEISHU_*` - 飞书通知配置（可选）
 - `WELINK_*` - WeLink 通知配置（可选）
 
 > 📖 详细配置说明请参考 **[配置文档](docs/CONFIG.md)**
+
+> 💡 **提示**：本项目已集成 **Ollama 云端 API**，无需本地 GPU 即可使用 AI 分析功能。配置说明请参考 **[Ollama 集成指南](docs/OLLAMA_INTEGRATION.md)**
 
 ### 3. 生成报告
 
@@ -136,8 +141,10 @@ npm run generate:index
 - **[部署与开发指南](docs/GUIDE.md)** - 快速开始、Git 配置、自动化部署
 - **[API 文档](docs/API.md)** - 详细的 API 使用说明
 - **[配置说明](docs/CONFIG.md)** - 环境变量和配置文件说明
+- **[Ollama 集成指南](docs/OLLAMA_INTEGRATION.md)** - Ollama 云端 API 配置与使用说明
+- **[Ollama 快速开始](docs/OLLAMA_QUICKSTART.md)** - 5 分钟快速上手 Ollama 云端 API
 
-> 📖 **建议**：首次使用请先阅读 [配置文档](docs/CONFIG.md) 了解环境变量配置。
+> 📖 **建议**：首次使用请先阅读 [配置文档](docs/CONFIG.md) 了解环境变量配置。使用 Ollama 云端 API 请参考 [Ollama 快速开始](docs/OLLAMA_QUICKSTART.md)。
 
 ## 首页更新
 
@@ -193,10 +200,10 @@ npm run format
 **核心配置**：
 
 ```bash
-# LLM 配置（必需）
+# LLM 配置（必需）- 已集成 Ollama 云端 API
 LLM_API_KEY=your-api-key
-LLM_BASE_URL=https://api.example.com/v1
-LLM_MODEL=qwen-plus
+LLM_BASE_URL=https://ollama.com
+LLM_MODEL=qwen3.5
 LLM_TEMPERATURE=0.7
 LLM_MAX_TOKENS=3000
 LLM_TIMEOUT=60000
@@ -215,7 +222,10 @@ WELINK_ENABLED=false
 REPORT_BASE_URL=https://report.wenspock.site
 ```
 
-> 💡 **提示**：`.env` 文件包含敏感信息，已添加到 `.gitignore`，不会被提交到 Git。
+> 💡 **提示**：
+> - `.env` 文件包含敏感信息，已添加到 `.gitignore`，不会被提交到 Git
+> - 使用 Ollama 云端 API 请参考 [Ollama 集成指南](docs/OLLAMA_INTEGRATION.md)
+> - 获取 Ollama API Key: https://ollama.com/settings/keys
 
 ## 项目状态
 
@@ -236,6 +246,7 @@ REPORT_BASE_URL=https://report.wenspock.site
 - ✅ 文档体系完善（API、部署指南、配置说明）
 - ✅ 配置管理优化（环境变量、敏感信息保护）
 - ✅ 代码清理完成（删除临时文件、精简文档）
+- ✅ **Ollama 云端 API 集成完成**（支持云端 AI 分析，无需本地 GPU）
 
 ## License
 
