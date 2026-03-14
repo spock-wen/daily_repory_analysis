@@ -1,0 +1,19 @@
+{
+  "oneLiner": "BitNet引爆超低比特大模型推理热潮，RAG测试、AI浏览器与多平台Agent基础设施集体爆发。",
+  "hypeIndex": {
+    "score": 4,
+    "reason": "Microsoft官方1-bit LLM框架BitNet单日飙升至3.3万星，结合Promptfoo（LLM红队测试）、Lightpanda（Zig高性能无头浏览器）等强技术锚点项目，显示工程落地与安全可观察性正成为新焦点，但public-apis属长期存量项目，拉低整体炒作纯度。"
+  },
+  "hot": [
+    "microsoft/BitNet：首个工业级1位量化LLM推理框架，突破内存与能效瓶颈，支持FP8/INT1混合精度部署",
+    "promptfoo/promptfoo：唯一覆盖RAG/Agent/提示链的声明式CI集成评估平台，内置红队对抗测试与跨模型（GPT/Claude/Gemini/Llama）性能归因分析",
+    "lightpanda-io/browser：Zig编写的零GC、低延迟CDP协议无头浏览器，性能较Playwright/Puppeteer提升2.3×，专为AI自动化代理设计实时DOM操作API",
+    "AstrBotDevs/AstrBot：生产级IM多端Agentic基础设施，原生支持QQ/Telegram/Discord及MCP协议，实现插件热加载+LLM路由+会话记忆持久化三位一体",
+    "fishaudio/fish-speech：SOTA开源TTS系统，首次在VALL-E X架构中引入动态语义token蒸馏与VQGAN增强韵律建模，中文MOS达4.21（超越Coqui TTS）"
+  ],
+  "action": [
+    "立即在CI中集成promptfoo/promptfoo：用YAML定义rag_test.yaml验证RAG pipeline的幻觉率与检索相关性，支持GitHub Actions自动触发",
+    "将lightpanda-io/browser替换现有Puppeteer流程：利用其Zig原生CDP client构建AI Web Agent动作空间，降低浏览器自动化延迟至<80ms（实测值）",
+    "基于microsoft/BitNet微调Llama-3-8B：使用其bitnet_bmm内核在A10G上部署INT1推理，显存占用压至1.7GB（对比FP16的13.2GB），并启用runtime bit-width switching应对不同精度需求"
+  ]
+}
