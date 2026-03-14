@@ -424,6 +424,15 @@ class MessageSender {
     // 构建今日概览
     const summary = `${trendingRepos.length} 个热门项目`;
     
+    // 提取所有项目名（owner/repo 格式），用于精确匹配链接
+    const repoNames = new Set();
+    trendingRepos.forEach(r => {
+      const fullName = r.fullName || r.repo || r.name;
+      if (fullName && fullName.includes('/')) {
+        repoNames.add(fullName);
+      }
+    });
+    
     // 构建报告链接
     const reportUrl = this.buildReportUrl(type, date);
     
@@ -434,6 +443,8 @@ class MessageSender {
       top5,
       insight,
       reportUrl,
+      aiInsights,
+      repoNames,
       // 保留完整 content 用于飞书
       content: this.buildFeishuContent(type, trendingRepos, aiInsights, reportUrl)
     };
@@ -443,26 +454,71 @@ class MessageSender {
    * 构建飞书消息内容（详细版）
    */
   buildFeishuContent(type, trendingRepos, aiInsights, reportUrl) {
-    let content = `📊 今日概览\n`;
-    content += `今日新增 ${trendingRepos.length} 个热门项目，涵盖多个技术领域\n\n`;
+    // 计算 AI 项目占比
+    const aiCount = trendingRepos.filter(r => 
+      (r.aiRelated === true) || 
+      (r.language && ['Python', 'TypeScript', 'Jupyter Notebook', 'Rust'].includes(r.language))
+    ).length;
+    const aiPercentage = trendingRepos.length > 0 ? Math.round(aiCount / trendingRepos.length * 100) : 0;
     
-    const top5 = trendingRepos.slice(0, 5);
-    if (top5.length > 0) {
-      content += `🔥 热门项目 TOP 5\n\n`;
-      top5.forEach((repo, index) => {
-        const stars = repo.stars || repo.todayStars || repo.star_increase || 0;
-        content += `${index + 1}️⃣ ${repo.name || repo.repo || repo.fullName} - ⭐ ${stars}\n`;
-        content += `${repo.desc || repo.description || ''}\n`;
-        content += `🏷️ ${repo.language || 'Unknown'}\n\n`;
+    // 提取所有项目名（owner/repo 格式），用于精确匹配链接
+    const repoNames = new Set();
+    trendingRepos.forEach(r => {
+      // 优先使用 fullName 或 repo 字段（包含完整的 owner/repo 格式）
+      const fullName = r.fullName || r.repo || r.name;
+      if (fullName && fullName.includes('/')) {
+        repoNames.add(fullName);
+      }
+    });
+    
+    // 将文本中的项目名转换为链接（只匹配实际存在的项目）
+    const linkifyRepos = (text) => {
+      let result = text;
+      repoNames.forEach(repoName => {
+        // 使用词边界匹配，避免部分匹配
+        const regex = new RegExp(`\\b${repoName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+        result = result.replace(regex, `[${repoName}](https://github.com/${repoName})`);
       });
-    }
+      return result;
+    };
     
+    let content = `📊 今日概览\n`;
+    content += `今日新增 ${trendingRepos.length} 个热门项目，${aiPercentage}% 为 AI 相关\n\n`;
+    
+    // 核心洞察
     if (aiInsights.oneLiner || aiInsights.oneLineSummary) {
       content += `💡 核心洞察\n`;
       content += `${aiInsights.oneLiner || aiInsights.oneLineSummary}\n\n`;
     }
     
-    content += `\n📋 查看详细报告：\n${reportUrl}\n\n`;
+    // 炒作指数
+    if (aiInsights.hypeIndex) {
+      const hypeScore = typeof aiInsights.hypeIndex === 'object' ? aiInsights.hypeIndex.score : aiInsights.hypeIndex;
+      const hypeReason = typeof aiInsights.hypeIndex === 'object' ? aiInsights.hypeIndex.reason : '';
+      const hypeEmoji = hypeScore >= 4 ? '🔥' : hypeScore <= 2 ? '❄️' : '📈';
+      const hypeLabel = hypeScore >= 4 ? '偏热' : hypeScore <= 2 ? '偏冷' : '正常';
+      content += `📈 炒作指数：${hypeEmoji} ${hypeLabel} (${hypeScore}/5)\n`;
+      if (hypeReason) content += `${hypeReason}\n`;
+      content += `\n`;
+    }
+    
+    // 今日热点
+    if (aiInsights.hot && aiInsights.hot.length > 0) {
+      content += `🔥 今日热点\n\n`;
+      aiInsights.hot.slice(0, 5).forEach((hot, index) => {
+        content += `${index + 1}. ${linkifyRepos(hot)}\n\n`;
+      });
+    }
+    
+    // 行动建议
+    if (aiInsights.action && aiInsights.action.length > 0) {
+      content += `🎯 行动建议\n\n`;
+      aiInsights.action.slice(0, 3).forEach((action, index) => {
+        content += `${index + 1}. ${linkifyRepos(action)}\n\n`;
+      });
+    }
+    
+    content += `📋 完整报告：\n${reportUrl}\n\n`;
     content += `⏰ 更新时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`;
     
     return content;
