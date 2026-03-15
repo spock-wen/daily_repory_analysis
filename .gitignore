@@ -54,3 +54,6 @@ package-lock.json
 .vscode/
 .idea/
 
+# Git 工作树
+.worktrees/
+
