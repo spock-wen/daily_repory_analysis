@@ -99,14 +99,19 @@ function collectReportsData() {
   const weeklyDir = path.join(dataDir, 'weekly');
   if (fs.existsSync(weeklyDir)) {
     const weeklyFiles = fs.readdirSync(weeklyDir)
-      .filter(f => f.startsWith('data-') && f.endsWith('.json'))
+      .filter(f => f.startsWith('data-weekly-') && f.endsWith('.json'))
       .sort();
     
     weeklyFiles.forEach(file => {
       const filePath = path.join(weeklyDir, file);
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      
+      // 从文件名提取周数（data-weekly-2026-W11.json → 2026-W11）
+      const weekMatch = file.match(/data-weekly-(\d{4}-W\d{2})\.json/);
+      const week = weekMatch ? weekMatch[1] : (data.week || data.date);
+      
       reportsData.weekly.push({
-        week: data.week || data.date,
+        week,
         projectCount: data.projects?.length || 0,
         avgStars: calculateAvgStars(data.projects),
         theme: data.aiInsights?.weeklyTheme || '',
@@ -254,7 +259,7 @@ function generateIndexHTML(reportsData) {
                 </a>`).join('');
 
   const weeklyHistoryHTML = reportsData.weekly.slice(-4).reverse().map(w => `
-                <a href="weekly/${w.week.includes('W') ? `github-weekly-${w.week}.html` : `github-weekly-${getWeekNumber(w.week)}.html`}" class="history-link">
+                <a href="weekly/github-weekly-${w.week}.html" class="history-link">
                     <span class="history-date">${w.week}</span>
                     <span class="history-count">${w.projectCount} 个项目</span>
                 </a>`).join('');
@@ -360,7 +365,7 @@ function generateIndexHTML(reportsData) {
                         </div>
                     </div>
                     ${latestWeekly.theme ? `<div class="report-theme">主题：${latestWeekly.theme}</div>` : ''}
-                    <a href="weekly/github-weekly-${latestWeekly.week?.includes('W') ? latestWeekly.week : getWeekNumber(latestWeekly.week || '2026-W11')}.html" class="report-btn">查看详情</a>
+                    <a href="weekly/github-weekly-${latestWeekly.week}.html" class="report-btn">查看详情</a>
                     <div class="report-history">
                         <h4>最近周报</h4>
                         ${weeklyHistoryHTML}
