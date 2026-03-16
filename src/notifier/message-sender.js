@@ -351,7 +351,22 @@ class MessageSender {
     const timeStamp = Date.now();
     const uuid = this.generateUUID();
 
-    // 构建详细的 WeLink 消息
+    // 如果 content 已经是完整消息（周报模式），直接使用
+    if (typeof content === 'string' && content.length > 50) {
+      const message = {
+        messageType: 'text',
+        content: {
+          text: content
+        },
+        timeStamp,
+        uuid
+      };
+      
+      logger.debug('WeLink 消息构建完成（直接使用 content）', { textLength: content.length });
+      return message;
+    }
+
+    // 否则构建详细的 WeLink 消息（日报/月报模式）
     let messageText = `${title}\n\n`;
     
     // 今日概览
@@ -699,7 +714,8 @@ class MessageSender {
   buildReportUrl(type, identifier) {
     const baseUrl = config.report?.baseUrl || 'https://report.wenspock.site';
     const filename = this.getReportFilename(type, identifier);
-    return `${baseUrl}/reports/${type}/${filename}`;
+    // 使用 nginx 配置的短路径：/weekly/, /daily/, /monthly/
+    return `${baseUrl}/${type}/${filename}`;
   }
 
   /**
@@ -712,9 +728,9 @@ class MessageSender {
     if (type === 'daily') {
       return `github-ai-trending-${identifier}.html`;
     } else if (type === 'weekly') {
-      return `weekly-${identifier}.html`;
+      return `github-weekly-${identifier}.html`;
     } else if (type === 'monthly') {
-      return `monthly-${identifier}.html`;
+      return `github-monthly-${identifier}.html`;
     }
     return `${type}-${identifier}.html`;
   }

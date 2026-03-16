@@ -1,0 +1,675 @@
+{
+  "generatedAt": "2026-03-16T01:31:57.134Z",
+  "date": "2026-03-16",
+  "triggerType": "daily",
+  "period": "每日",
+  "projects": [
+    {
+      "repo": "lightpanda-io/browser",
+      "name": "browser",
+      "fullName": "lightpanda-io/browser",
+      "desc": "Lightpanda: the headless browser designed for AI and automation",
+      "descZh": "Lightpanda ：专为人工智能和自动化设计的无头浏览器",
+      "language": "Zig",
+      "homepage": "https://lightpanda.io",
+      "topics": [
+        "browser",
+        "browser-automation",
+        "cdp",
+        "headless",
+        "playwright",
+        "puppeteer",
+        "zig"
+      ],
+      "stars": 18652,
+      "forks": 698,
+      "watchers": 18652,
+      "openIssues": 76,
+      "todayStars": "1335",
+      "createdAt": "2023-02-07T15:19:34Z",
+      "updatedAt": "2026-03-16T01:31:19Z",
+      "pushedAt": "2026-03-16T01:25:39Z",
+      "updateTime": "2026/3/16 09:31:19",
+      "createdTime": "2023/2/7 23:19:34",
+      "subscribersCount": 54,
+      "hasIssues": true,
+      "hasWiki": false,
+      "hasDiscussions": false,
+      "license": "GNU Affero General Public License v3.0",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/lightpanda-io/browser",
+      "analysis": {
+        "type": "general",
+        "typeName": "通用工具",
+        "coreFunctions": [
+          "提供开发者工具和效率提升功能",
+          "支持多种编程语言和框架",
+          "集成开发环境和工作流优化",
+          "提供调试和测试辅助功能"
+        ],
+        "useCases": [
+          "提升开发效率和代码质量",
+          "自动化重复性开发任务",
+          "团队协作和项目管理",
+          "持续集成和部署流程"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "🌟 热门项目，已被广泛采用",
+          "🕒 最近更新时间：2026/3/16 09:31:19"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    },
+    {
+      "repo": "Crosstalk-Solutions/project-nomad",
+      "name": "project-nomad",
+      "fullName": "Crosstalk-Solutions/project-nomad",
+      "desc": "Project N.O.M.A.D, is a self-contained, offline survival computer packed with critical tools, knowledge, and AI to keep you informed and empowered—anytime, anywhere.",
+      "descZh": "Project N.O.M.A.D是一款独立的离线生存计算机，配备了关键工具、知识和人工智能，可随时随地让您随时了解情况并获得授权。",
+      "language": "TypeScript",
+      "homepage": null,
+      "topics": [],
+      "stars": 1124,
+      "forks": 118,
+      "watchers": 1124,
+      "openIssues": 51,
+      "todayStars": "205",
+      "createdAt": "2025-06-24T15:35:01Z",
+      "updatedAt": "2026-03-16T01:30:50Z",
+      "pushedAt": "2026-03-16T00:27:05Z",
+      "updateTime": "2026/3/16 09:30:50",
+      "createdTime": "2025/6/24 23:35:01",
+      "subscribersCount": 16,
+      "hasIssues": true,
+      "hasWiki": true,
+      "hasDiscussions": true,
+      "license": "Apache License 2.0",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/Crosstalk-Solutions/project-nomad",
+      "analysis": {
+        "type": "rag",
+        "typeName": "RAG / 向量检索",
+        "coreFunctions": [
+          "提供高效的向量检索和语义搜索",
+          "支持大规模知识库构建和管理",
+          "集成 Embedding 模型进行向量化",
+          "优化检索准确性和响应速度"
+        ],
+        "useCases": [
+          "企业知识库和文档检索",
+          "智能问答系统",
+          "内容推荐和相似度匹配",
+          "多模态数据检索"
+        ],
+        "trends": [
+          "📈 今日增长迅速，值得关注",
+          "💡 新兴项目，具有良好发展潜力",
+          "🕒 最近更新时间：2026/3/16 09:30:50",
+          "🔍 RAG 技术不断优化，企业知识管理需求增长"
+        ],
+        "community": {
+          "level": "高",
+          "desc": "社区活跃，持续有开发者关注和贡献"
+        }
+      }
+    },
+    {
+      "repo": "volcengine/OpenViking",
+      "name": "OpenViking",
+      "fullName": "volcengine/OpenViking",
+      "desc": "OpenViking is an open-source context database designed specifically for AI Agents(such as openclaw). OpenViking unifies the management of context (memory, resources, and skills) that Agents need through a file system paradigm, enabling hierarchical context delivery and self-evolving.",
+      "descZh": "OpenViking是一个专门为人工智能代理（如openclaw ）设计的开源上下文数据库。OpenViking通过文件系统范式统一了Agent所需的上下文（内存、资源和技能）管理，实现了分层上下文交付和自我进化。",
+      "language": "Python",
+      "homepage": "https://openviking.ai",
+      "topics": [
+        "agent",
+        "agentic-rag",
+        "ai-agents",
+        "clawbot",
+        "context-database",
+        "context-engineering",
+        "filesystem",
+        "llm",
+        "memory",
+        "openclaw",
+        "opencode",
+        "rag",
+        "skill"
+      ],
+      "stars": 12451,
+      "forks": 856,
+      "watchers": 12451,
+      "openIssues": 68,
+      "todayStars": "1870",
+      "createdAt": "2026-01-05T07:11:17Z",
+      "updatedAt": "2026-03-16T01:31:20Z",
+      "pushedAt": "2026-03-16T00:10:06Z",
+      "updateTime": "2026/3/16 09:31:20",
+      "createdTime": "2026/1/5 15:11:17",
+      "subscribersCount": 47,
+      "hasIssues": true,
+      "hasWiki": false,
+      "hasDiscussions": true,
+      "license": "Apache License 2.0",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/volcengine/OpenViking",
+      "analysis": {
+        "type": "agent",
+        "typeName": "Agent 系统",
+        "coreFunctions": [
+          "提供智能代理/自动化助手功能",
+          "支持多步骤任务规划和执行",
+          "集成 LLM 能力进行自然语言交互",
+          "支持工具调用和外部 API 集成"
+        ],
+        "useCases": [
+          "自动化工作流程和任务处理",
+          "智能客服和对话系统",
+          "代码生成和开发辅助",
+          "数据处理和报告生成"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "🌟 热门项目，已被广泛采用",
+          "🕒 最近更新时间：2026/3/16 09:31:20",
+          "🤖 AI Agent 领域持续火热，多智能体协作成为趋势"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    },
+    {
+      "repo": "shareAI-lab/learn-claude-code",
+      "name": "learn-claude-code",
+      "fullName": "shareAI-lab/learn-claude-code",
+      "desc": "Bash is all you need - A nano Claude Code–like agent, built from 0 to 1",
+      "descZh": "Bash是您所需要的一切-一个纳米级Claude Code般的代理，从0到1",
+      "language": "TypeScript",
+      "homepage": "https://learn.shareai.run",
+      "topics": [
+        "agent",
+        "agent-development",
+        "ai-agent",
+        "claude",
+        "claude-code",
+        "educational",
+        "llm",
+        "python",
+        "teaching",
+        "tutorial"
+      ],
+      "stars": 27952,
+      "forks": 4880,
+      "watchers": 27952,
+      "openIssues": 41,
+      "todayStars": "872",
+      "createdAt": "2025-06-29T15:34:15Z",
+      "updatedAt": "2026-03-16T01:31:45Z",
+      "pushedAt": "2026-03-14T15:50:37Z",
+      "updateTime": "2026/3/16 09:31:45",
+      "createdTime": "2025/6/29 23:34:15",
+      "subscribersCount": 170,
+      "hasIssues": true,
+      "hasWiki": true,
+      "hasDiscussions": false,
+      "license": "MIT License",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/shareAI-lab/learn-claude-code",
+      "analysis": {
+        "type": "agent",
+        "typeName": "Agent 系统",
+        "coreFunctions": [
+          "提供智能代理/自动化助手功能",
+          "支持多步骤任务规划和执行",
+          "集成 LLM 能力进行自然语言交互",
+          "支持工具调用和外部 API 集成"
+        ],
+        "useCases": [
+          "自动化工作流程和任务处理",
+          "智能客服和对话系统",
+          "代码生成和开发辅助",
+          "数据处理和报告生成"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "⭐ 明星项目，在开发者社区具有重要影响力",
+          "🕒 最近更新时间：2026/3/16 09:31:45",
+          "🤖 AI Agent 领域持续火热，多智能体协作成为趋势"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    },
+    {
+      "repo": "shanraisshan/claude-code-best-practice",
+      "name": "claude-code-best-practice",
+      "fullName": "shanraisshan/claude-code-best-practice",
+      "desc": "practice made claude perfect",
+      "descZh": "实践使克劳德完美",
+      "language": "HTML",
+      "homepage": "",
+      "topics": [
+        "agentic-engineering",
+        "best-practices",
+        "claude-ai",
+        "claude-code",
+        "vibe-coding"
+      ],
+      "stars": 17027,
+      "forks": 1509,
+      "watchers": 17027,
+      "openIssues": 7,
+      "todayStars": "851",
+      "createdAt": "2025-10-31T14:15:28Z",
+      "updatedAt": "2026-03-16T01:31:48Z",
+      "pushedAt": "2026-03-15T08:01:47Z",
+      "updateTime": "2026/3/16 09:31:48",
+      "createdTime": "2025/10/31 22:15:28",
+      "subscribersCount": 176,
+      "hasIssues": true,
+      "hasWiki": true,
+      "hasDiscussions": false,
+      "license": "MIT License",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/shanraisshan/claude-code-best-practice",
+      "analysis": {
+        "type": "agent",
+        "typeName": "Agent 系统",
+        "coreFunctions": [
+          "提供智能代理/自动化助手功能",
+          "支持多步骤任务规划和执行",
+          "集成 LLM 能力进行自然语言交互",
+          "支持工具调用和外部 API 集成"
+        ],
+        "useCases": [
+          "自动化工作流程和任务处理",
+          "智能客服和对话系统",
+          "代码生成和开发辅助",
+          "数据处理和报告生成"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "🌟 热门项目，已被广泛采用",
+          "🕒 最近更新时间：2026/3/16 09:31:48",
+          "🤖 AI Agent 领域持续火热，多智能体协作成为趋势"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    },
+    {
+      "repo": "p-e-w/heretic",
+      "name": "heretic",
+      "fullName": "p-e-w/heretic",
+      "desc": "Fully automatic censorship removal for language models",
+      "descZh": "语言模型的全自动审查删除",
+      "language": "Python",
+      "homepage": "",
+      "topics": [
+        "abliteration",
+        "llm",
+        "transformer"
+      ],
+      "stars": 14716,
+      "forks": 1497,
+      "watchers": 14716,
+      "openIssues": 84,
+      "todayStars": "1062",
+      "createdAt": "2025-09-21T05:46:16Z",
+      "updatedAt": "2026-03-16T01:31:34Z",
+      "pushedAt": "2026-03-15T04:28:15Z",
+      "updateTime": "2026/3/16 09:31:34",
+      "createdTime": "2025/9/21 13:46:16",
+      "subscribersCount": 67,
+      "hasIssues": true,
+      "hasWiki": true,
+      "hasDiscussions": false,
+      "license": "GNU Affero General Public License v3.0",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "master",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/p-e-w/heretic",
+      "analysis": {
+        "type": "llm",
+        "typeName": "LLM 工具/框架",
+        "coreFunctions": [
+          "提供大语言模型训练和推理能力",
+          "支持模型微调和参数优化",
+          "集成主流 Transformer 架构",
+          "提供模型部署和 serving 工具"
+        ],
+        "useCases": [
+          "自定义大模型训练",
+          "领域特定模型微调",
+          "模型性能优化和压缩",
+          "多模型集成和对比"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "🌟 热门项目，已被广泛采用",
+          "🕒 最近更新时间：2026/3/16 09:31:34",
+          "🧠 大模型生态日趋成熟，微调部署工具需求旺盛"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    },
+    {
+      "repo": "666ghj/MiroFish",
+      "name": "MiroFish",
+      "fullName": "666ghj/MiroFish",
+      "desc": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
+      "descZh": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
+      "language": "Python",
+      "homepage": "https://mirofish.ai",
+      "topics": [
+        "agent-memory",
+        "financial-forecasting",
+        "future-prediction",
+        "knowledge-graph",
+        "llms",
+        "multi-agent-simulation",
+        "public-opinion-analysis",
+        "python3",
+        "social-prediction",
+        "swarm-intelligence"
+      ],
+      "stars": 27295,
+      "forks": 3276,
+      "watchers": 27295,
+      "openIssues": 108,
+      "todayStars": "2782",
+      "createdAt": "2025-11-26T04:23:02Z",
+      "updatedAt": "2026-03-16T01:31:36Z",
+      "pushedAt": "2026-03-07T13:45:58Z",
+      "updateTime": "2026/3/16 09:31:36",
+      "createdTime": "2025/11/26 12:23:02",
+      "subscribersCount": 148,
+      "hasIssues": true,
+      "hasWiki": true,
+      "hasDiscussions": true,
+      "license": "GNU Affero General Public License v3.0",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/666ghj/MiroFish",
+      "analysis": {
+        "type": "agent",
+        "typeName": "Agent 系统",
+        "coreFunctions": [
+          "提供智能代理/自动化助手功能",
+          "支持多步骤任务规划和执行",
+          "集成 LLM 能力进行自然语言交互",
+          "支持工具调用和外部 API 集成"
+        ],
+        "useCases": [
+          "自动化工作流程和任务处理",
+          "智能客服和对话系统",
+          "代码生成和开发辅助",
+          "数据处理和报告生成"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "⭐ 明星项目，在开发者社区具有重要影响力",
+          "🕒 最近更新时间：2026/3/16 09:31:36",
+          "🤖 AI Agent 领域持续火热，多智能体协作成为趋势"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    },
+    {
+      "repo": "voidzero-dev/vite-plus",
+      "name": "vite-plus",
+      "fullName": "voidzero-dev/vite-plus",
+      "desc": "Vite+ is the unified toolchain and entry point for web development. It manages your runtime, package manager, and frontend toolchain in one place.",
+      "descZh": "VITE +是Web开发的统一工具链和切入点。它在一个地方管理您的运行时、包管理器和前端工具链。",
+      "language": "Rust",
+      "homepage": "https://viteplus.dev",
+      "topics": [],
+      "stars": 1730,
+      "forks": 55,
+      "watchers": 1730,
+      "openIssues": 78,
+      "todayStars": "300",
+      "createdAt": "2025-03-06T13:04:32Z",
+      "updatedAt": "2026-03-16T01:31:15Z",
+      "pushedAt": "2026-03-16T00:59:28Z",
+      "updateTime": "2026/3/16 09:31:15",
+      "createdTime": "2025/3/6 21:04:32",
+      "subscribersCount": 12,
+      "hasIssues": true,
+      "hasWiki": false,
+      "hasDiscussions": true,
+      "license": "MIT License",
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": true,
+      "url": "https://github.com/voidzero-dev/vite-plus",
+      "analysis": {
+        "type": "devtool",
+        "typeName": "开发工具",
+        "coreFunctions": [
+          "提供开发者工具和效率提升功能",
+          "支持多种编程语言和框架",
+          "集成开发环境和工作流优化",
+          "提供调试和测试辅助功能"
+        ],
+        "useCases": [
+          "提升开发效率和代码质量",
+          "自动化重复性开发任务",
+          "团队协作和项目管理",
+          "持续集成和部署流程"
+        ],
+        "trends": [
+          "📈 今日增长迅速，值得关注",
+          "💡 新兴项目，具有良好发展潜力",
+          "🕒 最近更新时间：2026/3/16 09:31:15"
+        ],
+        "community": {
+          "level": "高",
+          "desc": "社区活跃，持续有开发者关注和贡献"
+        }
+      }
+    },
+    {
+      "repo": "anthropics/claude-plugins-official",
+      "name": "claude-plugins-official",
+      "fullName": "anthropics/claude-plugins-official",
+      "desc": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
+      "descZh": "由Anthropic管理的高质量Claude Code插件的官方目录。",
+      "language": "Python",
+      "homepage": "https://code.claude.com/docs/en/plugins",
+      "topics": [
+        "claude-code",
+        "mcp",
+        "skills"
+      ],
+      "stars": 11953,
+      "forks": 1154,
+      "watchers": 11953,
+      "openIssues": 259,
+      "todayStars": "604",
+      "createdAt": "2025-11-20T18:36:20Z",
+      "updatedAt": "2026-03-16T01:31:47Z",
+      "pushedAt": "2026-03-13T21:51:01Z",
+      "updateTime": "2026/3/16 09:31:47",
+      "createdTime": "2025/11/21 02:36:20",
+      "subscribersCount": 107,
+      "hasIssues": true,
+      "hasWiki": true,
+      "hasDiscussions": false,
+      "license": null,
+      "isFork": false,
+      "isArchived": false,
+      "defaultBranch": "main",
+      "hasApiData": true,
+      "isAI": false,
+      "url": "https://github.com/anthropics/claude-plugins-official",
+      "analysis": {
+        "type": "agent",
+        "typeName": "Agent 系统",
+        "coreFunctions": [
+          "提供智能代理/自动化助手功能",
+          "支持多步骤任务规划和执行",
+          "集成 LLM 能力进行自然语言交互",
+          "支持工具调用和外部 API 集成"
+        ],
+        "useCases": [
+          "自动化工作流程和任务处理",
+          "智能客服和对话系统",
+          "代码生成和开发辅助",
+          "数据处理和报告生成"
+        ],
+        "trends": [
+          "🔥 今日热度极高，受到社区广泛关注",
+          "🌟 热门项目，已被广泛采用",
+          "🕒 最近更新时间：2026/3/16 09:31:47",
+          "🤖 AI Agent 领域持续火热，多智能体协作成为趋势"
+        ],
+        "community": {
+          "level": "极高",
+          "desc": "社区非常活跃，是领域内的标杆项目"
+        }
+      }
+    }
+  ],
+  "stats": {
+    "totalProjects": 9,
+    "aiProjects": 8,
+    "avgStars": "14.8k"
+  },
+  "summary": {
+    "date": "2026-03-16",
+    "period": "每日",
+    "triggerType": "daily",
+    "total": 9,
+    "aiCount": 8,
+    "avgStars": "14.8k",
+    "topType": {
+      "name": "agent",
+      "count": 5
+    },
+    "topLang": {
+      "name": "Python",
+      "count": 4
+    },
+    "topProject": "666ghj/MiroFish",
+    "maxTodayStars": 2782,
+    "hotProjectCount": 7,
+    "projects": [
+      {
+        "name": "lightpanda-io/browser",
+        "type": "general",
+        "lang": "Zig",
+        "stars": 18652,
+        "todayStars": "1335",
+        "desc": "Lightpanda ：专为人工智能和自动化设计的无头浏览器"
+      },
+      {
+        "name": "Crosstalk-Solutions/project-nomad",
+        "type": "rag",
+        "lang": "TypeScript",
+        "stars": 1124,
+        "todayStars": "205",
+        "desc": "Project N.O.M.A.D是一款独立的离线生存计算机，配备了关键工具、知识和人工智能，可随时"
+      },
+      {
+        "name": "volcengine/OpenViking",
+        "type": "agent",
+        "lang": "Python",
+        "stars": 12451,
+        "todayStars": "1870",
+        "desc": "OpenViking是一个专门为人工智能代理（如openclaw ）设计的开源上下文数据库。Open"
+      },
+      {
+        "name": "shareAI-lab/learn-claude-code",
+        "type": "agent",
+        "lang": "TypeScript",
+        "stars": 27952,
+        "todayStars": "872",
+        "desc": "Bash是您所需要的一切-一个纳米级Claude Code般的代理，从0到1"
+      },
+      {
+        "name": "shanraisshan/claude-code-best-practice",
+        "type": "agent",
+        "lang": "HTML",
+        "stars": 17027,
+        "todayStars": "851",
+        "desc": "实践使克劳德完美"
+      },
+      {
+        "name": "p-e-w/heretic",
+        "type": "llm",
+        "lang": "Python",
+        "stars": 14716,
+        "todayStars": "1062",
+        "desc": "语言模型的全自动审查删除"
+      },
+      {
+        "name": "666ghj/MiroFish",
+        "type": "agent",
+        "lang": "Python",
+        "stars": 27295,
+        "todayStars": "2782",
+        "desc": "A Simple and Universal Swarm Intelligence Engine, "
+      },
+      {
+        "name": "voidzero-dev/vite-plus",
+        "type": "devtool",
+        "lang": "Rust",
+        "stars": 1730,
+        "todayStars": "300",
+        "desc": "VITE +是Web开发的统一工具链和切入点。它在一个地方管理您的运行时、包管理器和前端工具链。"
+      },
+      {
+        "name": "anthropics/claude-plugins-official",
+        "type": "agent",
+        "lang": "Python",
+        "stars": 11953,
+        "todayStars": "604",
+        "desc": "由Anthropic管理的高质量Claude Code插件的官方目录。"
+      }
+    ]
+  }
+}
