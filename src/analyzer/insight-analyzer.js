@@ -58,13 +58,31 @@ class InsightAnalyzer {
       logger.info('开始分析周报数据...', { weekStart: weeklyData.weekStart });
 
       const contextData = this.prepareContextData(weeklyData.brief);
+      // 构建提示词
       const promptTemplate = prompts.weekly.userPrompt;
       const prompt = this.buildPrompt(promptTemplate, contextData);
+      logger.info('Prompt 构建完成，准备调用 LLM...', { promptLength: prompt.length });
 
-      const result = await callLLM(prompt, {
-        temperature: 0.7,
-        max_tokens: 2500
-      });
+      let result;
+      try {
+        result = await callLLM(prompt, {
+          temperature: 0.7,
+          maxTokens: 3000
+        });
+        logger.info('LLM 调用完成，开始解析结果...');
+      } catch (llmError) {
+        logger.error(`LLM 调用失败: ${llmError.message}`, { stack: llmError.stack });
+        // 返回降级数据
+        return {
+          oneLiner: "AI 分析服务暂时不可用，请稍后重试。",
+          hypeIndex: { score: 0, reason: "无法连接 AI 服务" },
+          hot: [],
+          shortTerm: [],
+          longTerm: [],
+          action: [],
+          topProjects: []
+        };
+      }
 
       const insights = this.parseInsights(result, weeklyData.brief);
       await this.saveInsights('weekly', weeklyData.weekStart, insights);
@@ -77,7 +95,26 @@ class InsightAnalyzer {
       return insights;
     } catch (error) {
       logger.error(`周报 AI 分析失败：${error.message}`, { weekStart: weeklyData.weekStart });
-      throw error;
+      // 不要抛出异常，返回基础结构以允许流程继续
+      return {
+        weeklyTheme: {
+            oneLiner: "生成报告时发生错误",
+            detailed: "AI 分析服务暂时不可用，无法生成详细洞察。"
+        },
+        hypeIndex: { score: 0, reason: error.message },
+        hot: [],
+        highlights: [],
+        trends: {
+            shortTerm: []
+        },
+        emergingFields: [],
+        recommendations: {
+            developers: [],
+            enterprises: []
+        },
+        topProjects: [],
+        action: []
+      };
     }
   }
 
@@ -186,22 +223,30 @@ class InsightAnalyzer {
    */
   parseInsights(llmResponse, briefData) {
     try {
-      // 提取 JSON 内容（处理 markdown 代码块包裹的情况）
-      let jsonContent = llmResponse;
+      // 预处理：移除可能的 <think>...</think> 标签内容
+      let cleanResponse = llmResponse.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      
+      // 尝试提取 JSON 内容（处理 markdown 代码块包裹的情况）
+      let jsonContent = cleanResponse;
       
       // 如果响应包含 markdown 代码块，提取 JSON 部分
-      const markdownMatch = llmResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+      const markdownMatch = cleanResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (markdownMatch) {
         jsonContent = markdownMatch[1];
       }
       
       // 尝试从内容中提取 JSON 对象
-      let jsonMatch = jsonContent.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('无法从响应中提取 JSON');
+      // 使用更宽松的正则，找到第一个 { 和最后一个 }
+      const firstBrace = jsonContent.indexOf('{');
+      const lastBrace = jsonContent.lastIndexOf('}');
+      
+      if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+        throw new Error('无法从响应中提取 JSON：未找到有效的 JSON 对象结构');
       }
+      
+      jsonContent = jsonContent.substring(firstBrace, lastBrace + 1);
 
-      const insights = JSON.parse(jsonMatch[0]);
+      const insights = JSON.parse(jsonContent);
 
       // 补充项目链接信息
       if (insights.project_insights) {

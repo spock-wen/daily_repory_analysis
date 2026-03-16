@@ -5,7 +5,6 @@
  */
 
 require('dotenv').config();
-const https = require('https');
 const logger = require('./logger');
 
 // LLM 配置
@@ -13,7 +12,7 @@ const config = {
   apiKey: process.env.LLM_API_KEY || '',
   baseUrl: process.env.LLM_BASE_URL || 'https://ollama.com',
   model: process.env.LLM_MODEL || 'qwen3.5',
-  timeout: parseInt(process.env.LLM_TIMEOUT || '60000', 10),
+  timeout: parseInt(process.env.LLM_TIMEOUT || '120000', 10),
 };
 
 /**
@@ -25,7 +24,7 @@ const config = {
 async function callLLM(prompt, options = {}) {
   const {
     temperature = 0.7,
-    maxTokens = 2000,
+    maxTokens = 3000,
     model = config.model,
   } = options;
 
@@ -33,98 +32,139 @@ async function callLLM(prompt, options = {}) {
     throw new Error('LLM_API_KEY 环境变量未设置');
   }
 
-  logger.info(`调用 LLM API: ${model}`);
+  const url = new URL(config.baseUrl);
+  logger.info(`调用 LLM API: ${model}, URL: ${url.toString()}`);
+  
+  // Ollama API 使用 /api/chat 端点，OpenAI 兼容 API 使用 /chat/completions
+  const isOllama = url.hostname.includes('ollama');
+  if (isOllama) {
+    if (!url.pathname.endsWith('/api/chat')) {
+       url.pathname = url.pathname.replace(/\/$/, '') + '/api/chat';
+    }
+  } else if (!url.pathname.endsWith('/chat/completions')) {
+    url.pathname = url.pathname.replace(/\/$/, '') + '/chat/completions';
+  }
 
-  return new Promise((resolve, reject) => {
-    const url = new URL(config.baseUrl);
-    
-    // Ollama API 使用 /api/chat 端点，OpenAI 兼容 API 使用 /chat/completions
-    const isOllama = url.hostname === 'ollama.com' || url.hostname === 'ollama.ac.cn';
-    if (isOllama) {
-      url.pathname = '/api/chat';
-    } else if (!url.pathname.endsWith('/chat/completions')) {
-      url.pathname = url.pathname.replace(/\/$/, '') + '/chat/completions';
+  // 构建请求体
+  const requestBody = {
+    model,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    temperature,
+    stream: true, // 开启流式传输，避免长连接超时
+  };
+
+  // 添加 max_tokens (OpenAI) 或 num_predict (Ollama)
+  if (isOllama) {
+    requestBody.options = {
+      num_predict: maxTokens,
+      temperature: temperature
+    };
+  } else {
+    requestBody.max_tokens = maxTokens;
+    requestBody.stream = true;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+
+    // 优先使用全局 fetch (Node 18+)
+    let fetchFn = global.fetch;
+
+    // 如果没有全局 fetch，尝试动态导入 node-fetch
+    if (!fetchFn) {
+      try {
+        const module = await import('node-fetch');
+        fetchFn = module.default;
+      } catch (err) {
+        throw new Error('未找到全局 fetch 且无法加载 node-fetch: ' + err.message);
+      }
     }
 
-    // Ollama API 请求格式
-    const requestBody = JSON.stringify({
-      model,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature,
-      stream: false,  // Ollama 需要显式设置 stream: false
-    });
-
-    const requestOptions = {
-      hostname: url.hostname,
-      port: 443,
-      path: url.pathname,
+    logger.info('开始流式请求 LLM...');
+    const response = await fetchFn(url.toString(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${config.apiKey}`,
-        'Content-Length': Buffer.byteLength(requestBody),
       },
-      timeout: config.timeout,
-    };
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
 
-    const req = https.request(requestOptions, (res) => {
-      let data = '';
+    clearTimeout(timeoutId);
 
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API 请求失败: ${response.status} ${response.statusText} - ${errorText}`);
+    }
 
-      res.on('end', () => {
+    // 处理流式响应
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullContent = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      buffer += chunk;
+      
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // 保留最后一个可能不完整的行
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+        if (trimmedLine === 'data: [DONE]') continue;
+
         try {
-          const response = JSON.parse(data);
+          // 处理 SSE 格式 (data: {...}) 或直接 JSON 对象
+          let jsonStr = trimmedLine;
+          if (trimmedLine.startsWith('data: ')) {
+            jsonStr = trimmedLine.slice(6);
+          }
+
+          const data = JSON.parse(jsonStr);
           
-          // Ollama API 响应格式：{ message: { content: '...' }, total_duration: ... }
-          // OpenAI API 响应格式：{ choices: [{ message: { content: '...' } }] }
-          let content = '';
-          if (response.message && response.message.content) {
+          if (data.message && data.message.content) {
             // Ollama 格式
-            content = response.message.content;
-          } else if (response.choices && response.choices.length > 0) {
+            fullContent += data.message.content;
+            process.stdout.write(data.message.content); // 实时打印，证明它活着
+          } else if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
             // OpenAI 格式
-            content = response.choices[0].message?.content || '';
-          } else {
-            const error = new Error('LLM 响应格式异常');
-            logger.error('LLM 响应异常', { response: data });
-            reject(error);
-            return;
+            fullContent += data.choices[0].delta.content;
+            process.stdout.write(data.choices[0].delta.content);
           }
           
-          logger.success('LLM API 调用成功');
-          resolve(content.trim());
-        } catch (error) {
-          logger.error('解析 LLM 响应失败', { 
-            error: error.message,
-            rawData: data 
-          });
-          reject(error);
+          if (data.done) {
+             // Ollama 完成标志
+          }
+        } catch (e) {
+          // 忽略解析错误，继续处理下一行
         }
-      });
-    });
+      }
+    }
+    
+    console.log('\n'); // 换行
+    logger.info('收到完整 LLM 响应');
+    return fullContent.trim();
 
-    req.on('error', (error) => {
-      logger.error('LLM API 请求失败', { error: error.message });
-      reject(error);
-    });
-
-    req.on('timeout', () => {
+  } catch (error) {
+    if (error.name === 'AbortError') {
       logger.error('LLM API 请求超时');
-      req.destroy();
-      reject(new Error('LLM API 请求超时'));
-    });
-
-    req.write(requestBody);
-    req.end();
-  });
+      throw new Error('LLM API 请求超时');
+    }
+    logger.error('LLM API 调用失败', { error: error.message });
+    throw error;
+  }
 }
 
 /**

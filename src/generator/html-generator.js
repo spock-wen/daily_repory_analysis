@@ -553,27 +553,49 @@ class HTMLGenerator {
             <h2>重点项目推荐</h2>
             <div class="project-grid">
                 ${topProjects.slice(0, 3).map(project => {
-                  const repo = trendingRepos.find(p => p.name === project.repo) || {};
+                  // 尝试多种方式匹配项目
+                  const repo = trendingRepos.find(p => {
+                    const target = project.repo.toLowerCase();
+                    return (p.name && p.name.toLowerCase() === target) ||
+                           (p.fullName && p.fullName.toLowerCase() === target) ||
+                           (p.repo && p.repo.toLowerCase() === target) ||
+                           // 尝试匹配 owner/repo 中的 repo 部分
+                           (p.name && target.includes('/') && target.split('/')[1] === p.name.toLowerCase());
+                  }) || {};
+                  
                   const category = project.category || '技术创新';
                   const reason = project.reason || '';
                   const value = project.value || '';
                   
-                  return `
+                  // 如果找不到对应的 repo 信息，尝试构建基本的 url
+                   const projectUrl = repo.url || (project.repo.includes('/') ? `https://github.com/${project.repo}` : '#');
+                   
+                   // 决定是否显示 stats (优先用 repo 的数据，没有则用 project 中的数据)
+                   const stars = repo.stars !== undefined ? repo.stars : project.stars;
+                   const forks = repo.forks !== undefined ? repo.forks : project.forks;
+                   const showStats = stars !== undefined;
+                   
+                   // 决定描述内容 (优先用 repo 的描述，没有则用 AI 提供的 value)
+                   const description = repo.description || project.value || '';
+
+                   return `
                     <div class="project-card">
                         <div class="project-header">
-                            <a href="${repo.url || '#'}" target="_blank" class="project-name">${project.repo}</a>
+                            <a href="${projectUrl}" target="_blank" class="project-name">${project.repo}</a>
                             <div class="project-stats">
+                                ${showStats ? `
                                 <span class="stat-badge" title="总星数">
                                     <svg class="star-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
-                                    ${this.formatNumber(repo.stars || 0)}
+                                    ${this.formatNumber(stars || 0)}
                                 </span>
                                 <span class="stat-badge" title="分支数">
                                     <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"/></svg>
-                                    ${this.formatNumber(repo.forks || 0)}
+                                    ${this.formatNumber(forks || 0)}
                                 </span>
+                                ` : ''}
                             </div>
                         </div>
-                        ${repo.description ? `<div class="project-description">${repo.description}</div>` : ''}
+                        ${description ? `<div class="project-description">${description}</div>` : ''}
                         ${reason ? `
                         <div class="reason-box">
                             <div class="reason-label">入选理由</div>
@@ -723,8 +745,10 @@ class HTMLGenerator {
   createProjectUrlMap(trendingRepos) {
     const projectUrlMap = {};
     trendingRepos.forEach(project => {
-      if (project.name && project.url) {
-        projectUrlMap[project.name] = project.url;
+      if (project.url) {
+        if (project.name) projectUrlMap[project.name] = project.url;
+        if (project.fullName) projectUrlMap[project.fullName] = project.url;
+        if (project.repo) projectUrlMap[project.repo] = project.url;
       }
     });
     return projectUrlMap;
@@ -736,13 +760,22 @@ class HTMLGenerator {
   linkifyText(text, projectUrlMap) {
     if (!text) return text;
     
-    const projectRegex = /([a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+)/g;
+    // 匹配 owner/repo 格式，允许前后有反引号
+    const projectRegex = /(`?)([a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+)(`?)/g;
     
-    return text.replace(projectRegex, (match, projectName) => {
-      const url = projectUrlMap[projectName];
+    return text.replace(projectRegex, (match, prefix, projectName, suffix) => {
+      let url = projectUrlMap && projectUrlMap[projectName];
+      
+      // 如果 Map 中没有，且格式符合 owner/repo，尝试自动生成
+      if (!url && projectName.includes('/')) {
+         url = `https://github.com/${projectName}`;
+      }
+  
       if (url) {
+        // 去除反引号，直接返回链接
         return `<a href="${url}" target="_blank">${projectName}</a>`;
       }
+      
       return match;
     });
   }

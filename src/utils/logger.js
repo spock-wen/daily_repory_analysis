@@ -44,7 +44,12 @@ function formatLog(level, message, meta = {}) {
  * @param {Object} meta - 附加信息
  */
 function log(level, color, message, meta = {}) {
-  if (LogLevel[level.toLowerCase()] >= currentLevel) {
+  // 将级别转换为大写以匹配 LogLevel
+  const levelKey = level.toUpperCase();
+  // 默认为 INFO 级别 (1)
+  const messageLevel = LogLevel[levelKey] !== undefined ? LogLevel[levelKey] : 1;
+  
+  if (messageLevel >= currentLevel) {
     const formatted = formatLog(level, message, meta);
     console.log(`${color}${formatted}${colors.reset}`);
   }
