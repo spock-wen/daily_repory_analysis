@@ -59,6 +59,15 @@
   color: var(--text-primary);
 }
 
+.theme-box a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.theme-box a:hover {
+  text-decoration: underline;
+}
+
 .project-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
