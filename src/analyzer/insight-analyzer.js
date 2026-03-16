@@ -152,6 +152,76 @@ class InsightAnalyzer {
   }
 
   /**
+   * 分析深度趋势（基于过去 7 天数据）
+   * @param {Array} dailyDataList - 过去 7 天的日报数据列表
+   * @param {Object} weekRange - 周起止日期 { start, end }
+   * @returns {Promise<Object>} 深度趋势分析结果
+   */
+  async analyzeDeepTrends(dailyDataList, weekRange) {
+    try {
+      logger.info('开始分析深度趋势...', { weekStart: weekRange.start, days: dailyDataList.length });
+
+      if (!dailyDataList || dailyDataList.length === 0) {
+        logger.warn('没有足够的日报数据进行深度趋势分析');
+        return null;
+      }
+
+      // 准备上下文数据：将每日项目列表格式化为文本
+      const dailyDataText = dailyDataList.map(day => {
+        const projects = day.projects.slice(0, 15).map(p => 
+          `- ${p.fullName}: ${p.description} (AI: ${p.isAI}, Trends: ${p.trend_data ? p.trend_data.join(', ') : ''})`
+        ).join('\n');
+        return `### ${day.date} (Day ${day.dayIndex + 1})\n${projects}`;
+      }).join('\n\n');
+
+      // 构建提示词
+      const promptTemplate = prompts.deepTrends.userPrompt;
+      let prompt = promptTemplate;
+      prompt = prompt.replace('{weekStart}', weekRange.start);
+      prompt = prompt.replace('{weekEnd}', weekRange.end);
+      prompt = prompt.replace('{dailyData}', dailyDataText);
+
+      // 调用 LLM
+      const result = await callLLM(prompt, {
+        temperature: 0.8, // 稍微提高创造性以发现深层联系
+        max_tokens: 4000
+      });
+
+      // 解析结果
+      const deepTrends = this.parseDeepTrends(result);
+      
+      // 保存结果（作为周报 insights 的一部分或独立文件，这里暂存日志）
+      logger.success('深度趋势分析完成', { title: deepTrends?.title });
+
+      return deepTrends;
+    } catch (error) {
+      logger.error(`深度趋势分析失败：${error.message}`);
+      return null; // 不阻断主流程
+    }
+  }
+
+  /**
+   * 解析深度趋势结果
+   */
+  parseDeepTrends(llmResponse) {
+    try {
+      let cleanResponse = llmResponse.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+      let jsonContent = cleanResponse;
+      const markdownMatch = cleanResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (markdownMatch) jsonContent = markdownMatch[1];
+      
+      const firstBrace = jsonContent.indexOf('{');
+      const lastBrace = jsonContent.lastIndexOf('}');
+      if (firstBrace === -1 || lastBrace === -1) throw new Error('无效的 JSON 结构');
+      
+      return JSON.parse(jsonContent.substring(firstBrace, lastBrace + 1));
+    } catch (error) {
+      logger.warn(`解析深度趋势 JSON 失败: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
    * 准备上下文数据
    * @param {Object} briefData - 基础数据
    * @returns {Object} 格式化后的上下文数据

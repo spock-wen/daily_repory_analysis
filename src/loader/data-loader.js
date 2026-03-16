@@ -53,6 +53,80 @@ class DataLoader {
   }
 
   /**
+   * 加载过去一周的日报数据
+   * @param {string} weekStart - 周起始日期 (YYYY-MM-DD)
+   * @returns {Promise<Array>} 日报数据列表
+   */
+  async loadPastWeekDailyData(weekStart) {
+    try {
+      const dailyDataList = [];
+      
+      // 检查 weekStart 格式，如果是 YYYY-Www 格式，则解析出周一的日期
+      let startDate;
+      if (weekStart.includes('-W')) {
+        const parts = weekStart.split('-W');
+        const year = parseInt(parts[0]);
+        const week = parseInt(parts[1]);
+        
+        // 计算该周周一的日期 (ISO week date algorithm)
+        // 1. 获取当年的 1月4日 (这天一定在第一周)
+        const jan4 = new Date(year, 0, 4);
+        // 2. 获取该周周一的日期
+        const dayOfWeek = jan4.getDay() || 7; // Sunday is 0, make it 7
+        const firstMonday = new Date(jan4);
+        firstMonday.setDate(jan4.getDate() - dayOfWeek + 1);
+        
+        // 3. 加上 (week - 1) * 7 天
+        startDate = new Date(firstMonday);
+        startDate.setDate(firstMonday.getDate() + (week - 1) * 7);
+      } else {
+        startDate = new Date(weekStart);
+      }
+
+      if (isNaN(startDate.getTime())) {
+        logger.warn(`无效的周起始日期: ${weekStart}`);
+        return [];
+      }
+      
+      // 遍历一周 7 天
+      for (let i = 0; i < 7; i++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        try {
+          const briefPath = getDailyBriefPath(dateStr);
+          if (await fileExists(briefPath)) {
+            const rawData = await readJson(briefPath);
+            const normalizedData = this.normalizeDataFormat(rawData);
+            dailyDataList.push({
+              date: dateStr,
+              dayIndex: i, // 0-6 (Mon-Sun)
+              projects: normalizedData.trending_repos
+            });
+            logger.debug(`已加载日报数据: ${dateStr}`);
+          } else {
+            logger.warn(`日报数据不存在 (跳过): ${dateStr}`);
+          }
+        } catch (err) {
+          logger.warn(`加载日报失败 (跳过): ${dateStr}`, err);
+        }
+      }
+      
+      if (dailyDataList.length === 0) {
+        logger.warn(`未找到任何日报数据: ${weekStart}`);
+      } else {
+        logger.info(`共加载 ${dailyDataList.length} 天的日报数据`);
+      }
+      
+      return dailyDataList;
+    } catch (error) {
+      logger.error(`批量加载日报数据失败: ${error.message}`, { weekStart });
+      return []; // 出错时返回空数组，不阻断流程
+    }
+  }
+
+  /**
    * 加载周报数据
    * @param {string} weekStart - 周起始日期 (YYYY-MM-DD)
    * @returns {Promise<Object>} 周报数据

@@ -372,6 +372,7 @@ class HTMLGenerator {
         ${this.renderHeader(weekLabel, weekStart, weekEnd)}
         ${this.renderWeeklyStats(stats, trendingRepos)}
         ${this.renderWeeklyTheme(aiInsights, trendingRepos)}
+        ${this.renderDeepTrends(aiInsights, trendingRepos)}
         ${this.renderAIInsights(aiInsights, trendingRepos)}
         ${this.renderTopProjects(aiInsights, trendingRepos)}
         ${this.renderProjectGroups(trendingRepos)}
@@ -457,6 +458,52 @@ class HTMLGenerator {
                 <div class="theme-text">${oneLiner}</div>
                 ${detailed ? `<div style="margin-top: 8px; font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.6;">${detailed}</div>` : ''}
             </div>
+        </section>
+    `;
+  }
+
+  /**
+   * 渲染深度趋势版块
+   */
+  renderDeepTrends(aiInsights, trendingRepos) {
+    if (!aiInsights || !aiInsights.deepTrends) return '';
+    
+    const trend = aiInsights.deepTrends;
+    if (!trend.title || !trend.content) return '';
+
+    const projectUrlMap = this.createProjectUrlMap(trendingRepos);
+    const contentHtml = markdownToHtml(this.linkifyText(trend.content, projectUrlMap));
+
+    return `
+        <section class="deep-trend-section">
+            <div class="trend-header">
+                <div class="trend-title">${trend.title}</div>
+                <div class="trend-summary">${trend.summary}</div>
+            </div>
+            
+            <div class="trend-content">
+                ${contentHtml}
+            </div>
+
+            ${trend.evidence && trend.evidence.length > 0 ? `
+            <div class="evidence-list">
+                <div class="evidence-title">关键佐证 (Evidence)</div>
+                <div class="evidence-items">
+                    ${trend.evidence.map(item => {
+                        const url = projectUrlMap[item.name] || (item.name.includes('/') ? `https://github.com/${item.name}` : '#');
+                        return `
+                        <div class="evidence-item">
+                            <div class="evidence-day">${item.day}</div>
+                            <div>
+                                <a href="${url}" class="evidence-link" target="_blank">${item.name}</a>
+                                <div class="evidence-reason">${item.reason}</div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            ` : ''}
         </section>
     `;
   }
