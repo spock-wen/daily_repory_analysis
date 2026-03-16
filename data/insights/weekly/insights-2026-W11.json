@@ -1,80 +1,111 @@
 {
   "weeklyTheme": {
-    "oneLiner": "AI 伴侣与全球监控爆发，89% 项目聚焦人工智能，基础设施安全成关键。",
-    "detailed": "本周 9 个热门项目中 AI 占比高达 89%，人工智能仍是绝对核心。`koala73/worldmonitor` 以 34702 星领跑，展现 AI 在地缘监控中的潜力。`moeru-ai/airi` 获 31756 星，反映情感陪伴需求激增，自我托管成趋势。`alibaba/OpenSandbox` 获 7186 星，表明 AI 代理基础设施成重点，安全沙盒成刚需，Google 与阿里均加大生成式 AI 投入。"
+    "oneLiner": "LLM推理效率革命与群体智能崛起：BitNet领衔1-bit量化突破，BettaFish/MiroFish引领多Agent舆情预测新范式",
+    "detailed": "本周GitHub Trending呈现两大核心趋势：一是LLM推理框架的重大突破，microsoft/BitNet以34712 stars登顶，作为1位LLM官方推理框架，标志着推理效率革命的开端；二是群体智能与多Agent系统的爆发，666ghj/BettaFish以38869 stars（本周最高）、666ghj/MiroFish以27018 stars持续霸榜，两者均聚焦舆情分析与预测领域，体现AI从单点工具向群体协作智能演进。此外，promptfoo/promptfoo（16392 stars）代表的AI测试与红队工具热度上升，反映出AI安全与评估正在成为新基建方向。"
   },
   "highlights": [
-    "`koala73/worldmonitor` (34702 stars): 实时全球智能仪表盘，整合 AI 新闻与地缘监控，OSINT 领域新突破。",
-    "`moeru-ai/airi` (31756 stars): 自我托管 AI 伴侣，支持语音与游戏交互，追求 Neuro-sama 级别体验。",
-    "`alibaba/OpenSandbox` (7186 stars): 通用 AI 沙盒平台，支持 K8s 运行时，解决代理安全执行难题。"
+    "microsoft/BitNet（34712 stars）作为1位LLM官方推理框架开源，标志着LLM推理进入1-bit时代，推理成本有望降低10倍以上，是大模型落地应用的关键里程碑",
+    "666ghj/BettaFish（38869 stars，本周最高）以7262 forks创本周fork数纪录，体现多Agent舆情分析的高实用价值，实现从0构建不依赖框架的技术路径",
+    "666ghj/MiroFish（27018 stars）定位通用群体智能引擎，支持金融预测、舆情分析、社会预测等场景，展现swarm intelligence从概念到落地的突破"
   ],
   "topProjects": [
     {
-      "repo": "koala73/worldmonitor",
+      "repo": "microsoft/BitNet",
       "category": "技术创新",
-      "reason": "将 AI 应用于宏观态势感知，跨界整合新闻与地缘数据，OSINT 领域新突破，星数最高。",
-      "value": "提供统一的人工智能全球监控界面。",
+      "reason": "首个官方1-bit LLM推理框架，将模型权重量化至1-bit，突破传统8-bit/16-bit限制，推理速度提升显著，为边缘部署和成本优化提供可行方案",
+      "value": "实现LLM推理效率的革命性突破，降低部署成本10倍以上",
       "useCases": [
-        "舆情分析",
-        "地缘监控",
-        "基础设施跟踪"
+        "边缘设备部署",
+        "实时推理应用",
+        "低成本AI服务"
       ]
     },
     {
-      "repo": "moeru-ai/airi",
+      "repo": "666ghj/BettaFish",
       "category": "持续热门",
-      "reason": "自我托管 AI 伴侣，结合 Live2D 与语音交互，社区热度极高，追求 Neuro-sama 级别体验。",
-      "value": "打造具有外府灵魂的容器，实现网络生活陪伴。",
+      "reason": "本周stars最高（38869），fork数7262为本周最高，体现开发者对多Agent舆情分析系统的高度认可，不依赖任何框架的实现方式具有独特参考价值",
+      "value": "人人可用的多Agent舆情分析助手，打破信息茧房，预测舆情走向",
       "useCases": [
-        "虚拟陪伴",
-        "游戏交互",
-        "实时语音聊天"
+        "企业舆情监控",
+        "公共舆论分析",
+        "决策辅助系统"
       ]
     },
     {
-      "repo": "alibaba/OpenSandbox",
+      "repo": "promptfoo/promptfoo",
       "category": "企业价值",
-      "reason": "阿里出���，提供统一沙盒 API 与多语言 SDK，适配企业级运行时，解决代理安全执行难题。",
-      "value": "为 AI 编码代理与 GUI 代理提供安全执行环境。",
+      "reason": "集成测试、红队、漏洞扫描于一体的AI评估平台，支持GPT/Claude/Gemini/Llama多模型对比，CI/CD友好，企业可直接用于AI系统安全合规评估",
+      "value": "针对AI系统的红色团队/渗透测试/漏洞扫描平台",
       "useCases": [
-        "编码代理",
-        "代理评估",
-        "AI 代码执行"
+        "AI模型评估",
+        "安全合规测试",
+        "CI/CD集成"
+      ]
+    },
+    {
+      "repo": "666ghj/MiroFish",
+      "category": "技术创新",
+      "reason": "通用群体智能引擎，支持多Agent模拟、知识图谱、金融预测等场景，将swarm intelligence从理论推向实际应用，解决复杂系统预测问题",
+      "value": "简洁通用的群体智能引擎，预测万物",
+      "useCases": [
+        "金融预测",
+        "社会趋势分析",
+        "多Agent模拟"
+      ]
+    },
+    {
+      "repo": "NousResearch/hermes-agent",
+      "category": "企业价值",
+      "reason": "聚焦客服场景的AI Agent，支持多种大模型（Anthropic/OpenAI/Claude），可扩展性强，适合企业构建智能客服系统",
+      "value": "与企业共同成长的智能客服代表",
+      "useCases": [
+        "智能客服",
+        "企业服务自动化",
+        "多模型集成"
       ]
     }
   ],
   "trends": {
     "shortTerm": [
-      "AI 伴侣项目从云端转向本地自我托管，隐私与个性化成为关键。",
-      "AI 代理沙盒环境需求上升，安全执行代码与 GUI 操作成为基建重点。"
+      "1-bit LLM推理框架将成为新热点，microsoft/BitNet开源后预计带动一批量化推理优化项目出现",
+      "多Agent舆情/预测系统持续火热，BettaFish和MiroFish的高fork数（7262+3238）表明开发者正在积极学习和复现该技术路线",
+      "AI测试与安全评估工具需求激增，promptfoo的16k+ stars体现企业级AI应用对质量保障的重视"
     ]
   },
   "emergingFields": [
     {
-      "field": "AI 数字生命",
-      "description": "结合语音、游戏交互与情感模型，打造具有灵魂的数字生命体。",
+      "field": "群体智能（Swarm Intelligence）",
+      "description": "多Agent协同实现复杂任务预测与分析，从单点工具向群体协作演进",
       "projects": [
-        "moeru-ai/airi",
-        "GoogleCloudPlatform/generative-ai"
+        "666ghj/MiroFish",
+        "666ghj/BettaFish"
       ]
     },
     {
-      "field": "AI 代理基建",
-      "description": "提供安全沙盒与多语言 SDK，支撑编码与 GUI 代理的可靠运行。",
+      "field": "1-bit LLM推理",
+      "description": "模型权重极端量化，突破推理效率瓶颈，降低部署成本",
       "projects": [
-        "alibaba/OpenSandbox",
-        "CodebuffAI/codebuff"
+        "microsoft/BitNet"
+      ]
+    },
+    {
+      "field": "AI系统安全评估",
+      "description": "红色团队、渗透测试、漏洞扫描等AI安全测试成为新基建",
+      "projects": [
+        "promptfoo/promptfoo"
       ]
     }
   ],
   "recommendations": {
     "developers": [
-      "基于 `moeru-ai/airi` 架构尝试开发本地化 VTuber 助手。",
-      "利用 `alibaba/OpenSandbox` API 构建安全 AI 代码执行流程。"
+      "关注microsoft/BitNet的1-bit推理技术，学习量化部署方法，可尝试将其应用于自有模型以提升推理效率",
+      "研究666ghj/BettaFish的多Agent架构设计，理解不依赖框架的实现思路，可复用于其他舆情分析场景",
+      "掌握promptfoo的AI测试方法，为项目添加自动化评估流程，提升AI应用质量"
     ],
     "enterprises": [
-      "投资 AI 代理沙盒基础设施，确保自动化任务安全可控。",
-      "探索 AI 在地缘监控与舆情分析中的商业落地场景。"
+      "评估BitNet技术对企业AI部署的成本收益，1-bit推理可显著降低GPU资源消耗，适合大规模应用场景",
+      "引入多Agent舆情分析系统（如BettaFish）用于品牌监控、竞品分析、决策辅助，提升数据驱动能力",
+      "建立AI安全评估流程，使用promptfoo等工具进行红队测试和漏洞扫描，确保AI系统合规安全"
     ]
   }
 }
