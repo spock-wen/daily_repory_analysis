@@ -334,16 +334,9 @@ class InsightAnalyzer {
 
       return insights;
     } catch (error) {
-      logger.warn(`解析 AI 洞察失败：${error.message}`);
-      // 返回基础结构
-      return {
-        oneLiner: llmResponse.substring(0, 200),
-        hypeIndex: { score: 3, reason: 'AI 解析失败' },
-        hot: [],
-        shortTerm: [],
-        longTerm: [],
-        action: []
-      };
+      logger.error(`解析 AI 洞察失败：${error.message}`);
+      // 不返回假数据，而是抛出错误让上层处理
+      throw new Error(`解析 AI 洞察失败：${error.message}`);
     }
   }
 

@@ -33,8 +33,15 @@ class DataLoader {
       // 尝试加载 AI 洞察数据（可选）
       let aiInsights = null;
       if (await fileExists(aiInsightsPath)) {
-        aiInsights = await readJson(aiInsightsPath);
-        logger.info(`已加载 AI 洞察数据：${date}`);
+        const rawInsights = await readJson(aiInsightsPath);
+        
+        // 检测是否为失败的 insights（避免跳过重新分析）
+        if (this.isValidInsights(rawInsights)) {
+          aiInsights = rawInsights;
+          logger.info(`已加载 AI 洞察数据：${date}`);
+        } else {
+          logger.warn(`AI 洞察数据无效（可能为失败状态），将重新生成：${aiInsightsPath}`);
+        }
       } else {
         logger.warn(`AI 洞察数据不存在：${aiInsightsPath}`);
       }
@@ -147,8 +154,15 @@ class DataLoader {
       
       let aiInsights = null;
       if (await fileExists(aiInsightsPath)) {
-        aiInsights = await readJson(aiInsightsPath);
-        logger.info(`已加载 AI 洞察数据：${weekStart}`);
+        const rawInsights = await readJson(aiInsightsPath);
+        
+        // 检测是否为失败的 insights（避免跳过重新分析）
+        if (this.isValidInsights(rawInsights)) {
+          aiInsights = rawInsights;
+          logger.info(`已加载 AI 洞察数据：${weekStart}`);
+        } else {
+          logger.warn(`AI 洞察数据无效（可能为失败状态），将重新生成：${aiInsightsPath}`);
+        }
       } else {
         logger.warn(`AI 洞察数据不存在：${aiInsightsPath}`);
       }
@@ -186,8 +200,15 @@ class DataLoader {
       
       let aiInsights = null;
       if (await fileExists(aiInsightsPath)) {
-        aiInsights = await readJson(aiInsightsPath);
-        logger.info(`已加载 AI 洞察数据：${month}`);
+        const rawInsights = await readJson(aiInsightsPath);
+        
+        // 检测是否为失败的 insights（避免跳过重新分析）
+        if (this.isValidInsights(rawInsights)) {
+          aiInsights = rawInsights;
+          logger.info(`已加载 AI 洞察数据：${month}`);
+        } else {
+          logger.warn(`AI 洞察数据无效（可能为失败状态），将重新生成：${aiInsightsPath}`);
+        }
       } else {
         logger.warn(`AI 洞察数据不存在：${aiInsightsPath}`);
       }
@@ -294,6 +315,40 @@ class DataLoader {
       errors,
       warnings
     };
+  }
+
+  /**
+   * 检测 insights 是否为有效的分析结果
+   * @param {Object} insights - AI 洞察数据
+   * @returns {boolean} 是否有效
+   */
+  isValidInsights(insights) {
+    if (!insights || typeof insights !== 'object') {
+      return false;
+    }
+    
+    // 检测失败状态的标志
+    // 1. oneLiner 为空
+    if (!insights.oneLiner || insights.oneLiner.trim() === '') {
+      return false;
+    }
+    
+    // 2. hypeIndex.reason 包含失败关键词
+    const reason = insights.hypeIndex?.reason || '';
+    const failureKeywords = ['失败', '不可用', '错误', 'error', 'failed'];
+    if (failureKeywords.some(kw => reason.toLowerCase().includes(kw))) {
+      return false;
+    }
+    
+    // 3. 完全没有有效内容
+    const hasContent = (insights.hot?.length > 0) || 
+                       (insights.action?.length > 0) ||
+                       (insights.shortTerm?.length > 0);
+    if (!hasContent && insights.oneLiner.length < 10) {
+      return false;
+    }
+    
+    return true;
   }
 }
 
